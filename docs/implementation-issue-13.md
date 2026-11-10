@@ -10,7 +10,7 @@ A modell a `rhasspy/piper-voices` `cf910fb59f1d79ab3b625a63993a108751c6c25d` rev
 
 Az eredeti Piper 22 050 Hz-es PCM-jét FFmpeg alakítja a meglévő 24 kHz-es veszteségmentes összeállításhoz. Ez a mintavételt változtatja, a tempót és hangmagasságot nem. A meglévő részenkénti beszédszint-kiegyenlítés és az egyszeri 96 kbit/s mono MP3-kódolás marad. A teljes forrásfájl sorrendjét és teljességét a közös feladatszolgáltatás kezeli; a modell egy feladaton belül egyszer töltődik be.
 
-A tisztított fő környezet 218 MB körüli, az Imre-modell 60 MiB körüli. Az MLX, Transformers, Hugging Face és korábbi hangkódolók kikerültek a futtatási függőségekből. A régi, kis forrásállományok külön jóváhagyásig megmaradnak, de az alkalmazás nem importálja és nem futtatja őket.
+A tisztított fő környezet 218 MB körüli, az Imre-modell 60 MiB körüli. Az MLX, Transformers, Hugging Face és korábbi hangkódolók kikerültek a futtatási függőségekből. A régi, kis forrásállományok a felhasználó külön, tételes jóváhagyása után eltávolítva.
 
 ## Célgépes hosszú próba
 
@@ -24,7 +24,7 @@ A tartós automatizált valódi modellpróba most a Piper teljes fájl → MP3 �
 
 A kizárólag a régi kísérletekhez letöltött OmniVoice-, teljes VibeVoice-forrás-, átalakított VibeVoice-, Whisper- és beszélődiagnosztikai modellekből összesen 52 270 032 933 logikai byte törölve. Ez fájlméretösszeg, nem független lemezfoglalási mérés. Az újra előállítható alternatív tesztkörnyezet és modellmásolatok is törölve. Csak az Imre modell maradt aktív.
 
-A régi tesztalkalmazás és kisebb saját próbafájlok visszaállíthatóan a Kukába kerültek. A korábbi könyvforrások, a Downloads mappába felhasználó által mentett hangok, más projektek és a Git története változatlanok. Az automatikus ellenőrzés a régi, Gitben követett referencia- és forrásfájlok törlését elutasította; pontos [törlési lista](piper-retired-files.md) készült külön jóváhagyáshoz. A takarítási munkaszabály az AGENTS.md-be is bekerült.
+A régi tesztalkalmazás és kisebb saját próbafájlok visszaállíthatóan a Kukába kerültek. A korábbi könyvforrások, a Downloads mappába felhasználó által mentett hangok, más projektek és a Git története változatlanok. A felhasználó a pontos [törlési listát](piper-retired-files.md) külön jóváhagyta; a tíz régi forrás-/referenciafájl és a két saját kukabeli tesztmaradvány eltávolítva. A futó Piper-alkalmazás és a felhasználó új hosszú tesztje nem változott. A takarítási munkaszabály az AGENTS.md-be is bekerült.
 
 ## Ellenőrzés
 
@@ -38,4 +38,4 @@ A `73fccdd...095bdd4` diff külön Standards-reviewja 0 dokumentált szabálysé
 
 A külön Spec-review 0 igazolt kódhibát talált az aktív #13-folyamatban. A rögzített eredeti Piper, a normál tempó, a helyi futás, a saját lejátszó és a biztonságos kimenet megfelel az új felhasználói döntésnek. A hosszú hang emberi átvétele és a fennmaradó pontos törlési lista külön lezárandó; az ASR-tartalmi eltérés nincs sikernek minősítve.
 
-Összesítés: Standards 0, Spec 0 fennmaradó kódhiba. A #13 nyitva marad a hosszú hang visszajelzéséig és a fennmaradó takarítás lezárásáig. Az elvetett #9/#10 VibeVoice-feladatok not_planned állapottal lezárva, a #11/#12 és a további feladatok Piperre és az új függőségekre igazítva.
+Összesítés: Standards 0, Spec 0 fennmaradó kódhiba. A takarítás lezárva; a #13 a hosszú hang visszajelzéséig marad nyitva. Az elvetett #9/#10 VibeVoice-feladatok not_planned állapottal lezárva, a #11/#12 és a további feladatok Piperre és az új függőségekre igazítva.
