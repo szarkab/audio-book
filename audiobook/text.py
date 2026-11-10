@@ -4,7 +4,7 @@ import re
 
 
 _ABBREVIATIONS = {
-    "dr", "prof", "ifj", "id", "pl", "stb", "kb", "ún", "ill", "vö", "sz",
+    "dr", "prof", "ifj", "id", "pl", "stb", "kb", "ún", "ill", "vö", "sz", "krt", "kft",
     "jan", "febr", "márc", "ápr", "jún", "júl", "aug", "szept", "okt", "nov", "dec",
 }
 _BOUNDARY = re.compile(r'[.!?…]+[”»"\')\]]*(?:\s+|$)|\n[ \t]*\n+')
@@ -16,6 +16,8 @@ def _sentence_end(text: str, boundary: re.Match[str]) -> bool:
     if any(quote in punctuation for quote in '”»"') and re.match(r"[–—-]\s", following):
         return False  # Keep dialogue and its reporting clause together.
     if punctuation.startswith(".") and not punctuation.startswith(".."):
+        if following and following[0].islower():
+            return False  # A lowercase continuation is not a new prose sentence.
         before = text[max(0, boundary.start() - 32):boundary.start()]
         token = re.search(r"(\w+)$", before)
         if token:

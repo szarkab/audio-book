@@ -139,6 +139,25 @@ class LongGenerationTests(unittest.TestCase):
         self.assertTrue(any(sentence in part for part in spoken), spoken)
         self.assertEqual("".join(spoken), text)
 
+    def test_lowercase_continuations_and_company_abbreviations_stay_in_the_sentence(self):
+        cases = [
+            (342, "A találkozót a Margit krt. egyik házában tartották meg."),
+            (341, "A Szikra Kft. munkatársai közösen olvasták el a könyvet."),
+            (350, "A Szikra Kft. Budapesti Irodája ma nyitva maradt."),
+            (350, "A jegyzetben a ritka röv. magyarázata is szerepelt."),
+        ]
+        for index, (length, sentence) in enumerate(cases):
+            with self.subTest(sentence=sentence):
+                text = "A " + "a" * length + ". " + sentence
+                self.source.write_text(text, encoding="utf-8")
+                spoken = []
+                def capture(part, destination, notify):
+                    spoken.append(part)
+                    reference_speech(part, destination, notify)
+                GenerationService(speech_renderer=capture).generate(self.source, self.root / f"rövidítés-{index}.mp3")
+                self.assertTrue(any(sentence in part for part in spoken), spoken)
+                self.assertEqual("".join(spoken), text)
+
 
 if __name__ == "__main__":
     unittest.main()
