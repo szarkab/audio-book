@@ -16,14 +16,6 @@ struct WorkerFailure: LocalizedError {
 }
 
 struct Backend: Sendable {
-    let usesVibeVoice = Bundle.main.object(forInfoDictionaryKey: "AudioBookSpeechEngine") as? String == "vibevoice"
-    var exportSpeed: String { usesVibeVoice ? "1.0" : "1.1" }
-    var narratorDescription: String {
-        usesVibeVoice
-            ? "VibeVoice magyar próba · Férfi narrátor · Eredeti tempó · MP3"
-            : "Fejlesztői változat · Férfi narrátor · 1,1× tempó · MP3"
-    }
-
     // Development launch only. The standalone bundle is a later ticket.
     let projectRoot: URL = ProcessInfo.processInfo.environment["AUDIOBOOK_PROJECT_ROOT"]
         .map { URL(fileURLWithPath: $0) }
@@ -35,7 +27,6 @@ struct Backend: Sendable {
         onEvent: @escaping @MainActor @Sendable (WorkerEvent) -> Void
     ) async throws {
         let root = projectRoot
-        let engine = usesVibeVoice ? "vibevoice" : "omnivoice"
         try await Task.detached(priority: .userInitiated) {
             let process = Process()
             process.executableURL = root.appendingPathComponent(".venv/bin/python").resolvingSymlinksInPath()
@@ -44,11 +35,7 @@ struct Backend: Sendable {
             var environment = ProcessInfo.processInfo.environment
             environment["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
             environment["PYTHONUNBUFFERED"] = "1"
-            environment["AUDIOBOOK_ENGINE"] = engine
             environment["PYTHONPATH"] = root.path + ":" + root.appendingPathComponent(".venv/lib/python3.12/site-packages").path
-            environment["HF_HUB_OFFLINE"] = "1"
-            environment["TRANSFORMERS_OFFLINE"] = "1"
-            environment["HF_HUB_DISABLE_TELEMETRY"] = "1"
             process.environment = environment
             let pipe = Pipe()
             process.standardOutput = pipe

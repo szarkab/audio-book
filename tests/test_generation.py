@@ -70,34 +70,19 @@ class GenerationTests(unittest.TestCase):
     def test_missing_model_is_an_actionable_job_failure(self):
         service = GenerationService(model_path=self.root / "missing-model")
         events = []
-        with self.assertRaisesRegex(GenerationError, "modell"):
+        with self.assertRaisesRegex(GenerationError, "Imre"):
             service.generate(self.source, self.root / "hang.mp3", notify=events.append)
         self.assertFalse((self.root / "hang.mp3").exists())
         self.assertEqual(events[-1].state, "failed")
 
-    def test_missing_vibevoice_model_is_a_clear_failure_without_partial_output(self):
-        service = GenerationService(engine="vibevoice", model_path=self.root / "missing-vibevoice")
-        events = []
-        output = self.root / "vibevoice.mp3"
-        with self.assertRaisesRegex(GenerationError, "VibeVoice"):
-            service.generate(self.source, output, notify=events.append)
-        self.assertFalse(output.exists())
-        self.assertEqual(events[-1].state, "failed")
-
-    def test_a_different_model_cannot_silently_replace_the_hungarian_vibevoice(self):
-        model = self.root / "wrong-model"
+    def test_a_different_voice_cannot_silently_replace_imre(self):
+        model = self.root / "wrong-voice"
         model.mkdir()
-        files = {"config.json": {"model_type": "vibevoice"},
-                 "tokenizer.json": {}, "tokenizer_config.json": {},
-                 "preparation.json": {"source": "other/english-model", "source_revision": "different"},
-                 "model.safetensors.index.json": {"weight_map": {"weight": "part.safetensors"}}}
-        for name, data in files.items():
-            (model / name).write_text(json.dumps(data))
-        (model / "part.safetensors").write_bytes(b"not-the-selected-checkpoint")
-        service = GenerationService(engine="vibevoice", model_path=model)
+        (model / "hu_HU-imre-medium.onnx").write_bytes(b"a different voice")
+        (model / "hu_HU-imre-medium.onnx.json").write_text("{}")
         output = self.root / "wrong.mp3"
-        with self.assertRaisesRegex(GenerationError, "kiválasztott magyar"):
-            service.generate(self.source, output)
+        with self.assertRaisesRegex(GenerationError, "Imre.*sérült|sérült.*Imre"):
+            GenerationService(model_path=model).generate(self.source, output)
         self.assertFalse(output.exists())
 
     def test_a_file_created_during_generation_is_not_reported_as_our_result(self):

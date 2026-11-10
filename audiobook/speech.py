@@ -1,80 +1,50 @@
-"""Offline MLX adapter for the approved male narrator."""
-import os
-import json
+"""The user-approved Hungarian Piper Imre voice, entirely local."""
 import hashlib
 from pathlib import Path
+import shutil
+import subprocess
 from typing import Any, Callable
+import wave
 
 
-REFERENCE_TEXT = (
-    "Az esti fény lassan elhalványult a dombok mögött. Júlia becsukta a könyvet, "
-    "és az ablakhoz lépett. A kertben csend volt, csak a szél mozgatta a diófa "
-    "leveleit. Úgy érezte, most végre van ideje nyugodtan végiggondolni a történteket."
-)
+MODEL_REVISION = "cf910fb59f1d79ab3b625a63993a108751c6c25d"
+MODEL_FILES = {
+    "hu_HU-imre-medium.onnx": "bcec8e6e5404baca0fcaf2895da4d02d414d3340b9f80bd94a2112b5c67061ae",
+    "hu_HU-imre-medium.onnx.json": "760857edbd31947a853842df5833bd16aa1f660feabe11fbebb0a378bf8328c5",
+}
 
 
-class MlxSpeechRenderer:
+class PiperSpeechRenderer:
     def __init__(self, model_path: Path):
         self.model_path = model_path
-        self._model: Any = None
-        self._reference_tokens: Any = None
-        self._reference_text = ""
+        self._voice: Any = None
 
     def __call__(self, text: str, destination: Path, notify: Callable[[str], None]) -> None:
         from .generation import GenerationError
 
-        required = ["config.json", "model.safetensors", "tokenizer.json",
-                    "audio_tokenizer/config.json", "audio_tokenizer/model.safetensors"]
-        if not all((self.model_path / item).is_file() for item in required):
-            raise GenerationError("Hiányzik vagy hiányos a helyi beszédmodell. Ellenőrizd a modell telepítését.")
-        os.environ["HF_HUB_OFFLINE"] = "1"
-        os.environ["TRANSFORMERS_OFFLINE"] = "1"
-        os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
-        import mlx.core as mx
-        import numpy as np
-        from mlx_audio.audio_io import write as audio_write
-        from mlx_audio.tts.models.omnivoice.duration import RuleDurationEstimator
-        from mlx_audio.tts.utils import load_model
-        from mlx_audio.tts.models.omnivoice.utils import create_voice_clone_prompt
+        if self._voice is None:
+            for name, expected in MODEL_FILES.items():
+                path = self.model_path / name
+                if not path.is_file():
+                    raise GenerationError("Hiányzik a Piper Imre modell. Ellenőrizd a modell telepítését.")
+                with path.open("rb") as stream:
+                    actual = hashlib.file_digest(stream, "sha256").hexdigest()
+                if actual != expected:
+                    raise GenerationError("A Piper Imre modell sérült vagy másik hangra cserélődött.")
+            from piper import PiperVoice
 
-        if not mx.metal.is_available():
-            raise GenerationError("Az Apple GPU nem érhető el. Indítsd újra az alkalmazást a Macen.")
-        mx.set_default_device(mx.gpu)
-        if self._model is None:
             notify("loading_model")
-            reference = Path(__file__).resolve().parents[1] / "assets/voices/male-reference.wav"
-            metadata = reference.with_suffix(".json")
-            if not reference.is_file() or not metadata.is_file():
-                raise GenerationError("Hiányzik a férfi narrátor hangreferenciája. Ellenőrizd az alkalmazásfájlokat.")
-            info = json.loads(metadata.read_text())
-            if hashlib.sha256(reference.read_bytes()).hexdigest() != info["reference_wav_sha256"]:
-                raise GenerationError("A narrátor hangreferenciája sérült.")
-            model = load_model(str(self.model_path))
-            tokens = create_voice_clone_prompt(
-                str(reference), tokenizer=model.audio_tokenizer,
-                ref_text=info["text"], preprocess=False,
-            )
-            mx.eval(tokens)
-            self._model = model
-            self._reference_tokens = tokens
-            self._reference_text = info["text"]
-        model = self._model
-        duration = max(3.0, RuleDurationEstimator().estimate_duration(
-            text, REFERENCE_TEXT, 23.0, low_threshold=None,
-        ))
-        mx.random.seed(42)
+            self._voice = PiperVoice.load(self.model_path / "hu_HU-imre-medium.onnx", use_cuda=False)
         notify("generating")
-        result = next(model.generate(
-            text=text, language="hu", instruct="male, middle-aged, low pitch",
-            duration_s=duration, num_steps=64,
-            ref_tokens=self._reference_tokens, ref_text=self._reference_text,
-        ))
-        mx.eval(result.audio)
-        audio = np.asarray(result.audio, dtype=np.float32).reshape(-1)
-        if not audio.size or not np.all(np.isfinite(audio)) or np.sqrt(np.mean(audio ** 2)) < 1e-5:
-            raise GenerationError("A modell nem adott használható hangot. Próbáld újra a generálást.")
-        peak = float(np.abs(audio).max())
-        audio = audio * min(1.0, 0.95 / peak)
-        audio_write(str(destination), audio, result.sample_rate)
-        del result, audio
-        mx.clear_cache()
+        native = destination.with_suffix(".native.wav")
+        try:
+            with wave.open(str(native), "wb") as audio:
+                self._voice.synthesize_wav(text, audio)
+            # Piper's original 22,050 Hz PCM is resampled without changing tempo
+            # for the application's existing 24 kHz lossless assembly path.
+            subprocess.run([
+                shutil.which("ffmpeg") or "ffmpeg", "-nostdin", "-v", "error", "-n",
+                "-i", str(native), "-ar", "24000", "-ac", "1", "-c:a", "pcm_s16le", str(destination),
+            ], check=True, capture_output=True)
+        finally:
+            native.unlink(missing_ok=True)

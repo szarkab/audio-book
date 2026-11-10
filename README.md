@@ -1,60 +1,45 @@
-# Hangoskönyv
+# Hangoskönyv — Piper Imre
 
-Magyar TXT-fájlok helyi felolvasása férfi narrátorhanggal, Apple Silicon Macen. A fejlesztői változat magyar UTF-8 TXT-fájlokat alakít egyetlen mono, 96 kbit/s MP3-má, legfeljebb kétmondatos belső feldolgozással és szövegalapú haladásjelzéssel. Az alkalmazás alapértelmezett exporttempója 1,1×; a gyorsítás a kész hangon, hangmagasság-változtatás nélkül történik. A korábbi 600 karakteres korlát megszűnt. A beszédgenerálás a már letöltött OmniVoice-bfloat16 modellt használja MLX-szel, a GPU-n; nincs felhős beszédgenerálás.
+Magyar UTF-8 TXT-fájlok helyi felolvasása az elfogadott **Piper Imre** férfihanggal. Egy fájlból egyetlen mono, 96 kbit/s MP3 készül, normál tempóval. A kész Piper motor CPU-n fut; a generálás nem igényel internetet, felhőt, hangklónozást vagy GPU-t.
 
-## Magyar VibeVoice-próbaváltozat
+## Indítás
 
-**A hosszú felhasználói próba elutasított:** hangváltások, torzulás és túl lassú működés miatt ez a konfiguráció nem elfogadott hangoskönyves megoldás. [Meglévő motorok és célgépes rövid alternatív próbák](docs/existing-hungarian-tts-solutions.md).
+A jelenlegi fejlesztői gépen az egyetlen alkalmazás az `artifacts/HangosKonyv.app`. Válassz TXT-fájlt, ellenőrizd az előnézetet, majd indítsd az MP3-készítést. A kész hang csak a Lejátszás gombra indul; szüneteltethető, leállítható és tekerhető. Meglévő MP3-at nem ír felül, az előnézet óta megváltozott forrásnál új kiválasztást kér.
 
-A további fejlesztés kiválasztott modellje a `Cseti/VibeVoice_7B_hun_v2`. Az M5/32 GB gépen a 4 bites nyelvi modullal és eredeti F32 hangképző komponensekkel előkészített változat rövid magyar TXT-ből helyben készít MP3-at. Az új hang eredeti tempóval, 1,0× exporttal működik; a korábbi OmniVoice-gyorsítást nem örökli. A hosszú VibeVoice-narráció és a sorszámkiejtés külön feladat, a rövid hang emberi elfogadása még nyitott.
+A teljes fájl köztes jóváhagyás nélkül feldolgozódik. A rövid belső egységek veszteségmentes PCM-ben állnak össze a lemezen, majd egyszer készül az MP3. A forrásfájl változatlan marad.
 
-```sh
-./scripts/build-dev-app.sh vibevoice
-open artifacts/HangosKonyv-VibeVoice.app
-```
+Ez fejlesztői alkalmazás: a projekt Python-környezetét, helyi modelljét és FFmpeg-jét használja. Az önálló DMG, Markdown-beolvasás, megszakítás utáni tartós folytatás és sorszámfinomítás a további feladatokban marad. A logó és arculat a hangteszt után következik.
 
-Ez külön fejlesztői alkalmazás, a korábbi `HangosKonyv.app` OmniVoice-változata összehasonlításra megmarad. Nem önálló DMG. Az eredeti modell egyszeri beszerzése és az előkészítő futtatása fejlesztői lépés; a célgépen ez már elkészült. A rögzített verziók, reprodukció, mérések és korlátok a [#10 megvalósítási leírásában](docs/implementation-issue-10.md) találhatók. Új gépen a modellt az ott leírt módon elő kell készíteni.
+## Fejlesztői előkészítés
 
-## Fejlesztői indítás
-
-Szükséges: Apple Silicon Mac, Xcode vagy Swift 6 eszközök, uv és FFmpeg. A modell beszerzéséhez internet szükséges; generáláskor nincs rá szükség.
+Szükséges: Apple Silicon Mac, Swift 6 eszközök, uv és FFmpeg.
 
 ```sh
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python -r requirements-dev.txt
-```
-
-A modell letöltési útja és rögzített revíziója a [hangpróba leírásában](docs/voice-trial.md) található. A már előkészített fejlesztői gépen a modell rendelkezésre áll.
-
-```sh
+uv pip sync --python .venv/bin/python requirements-dev.txt
+.venv/bin/python scripts/prepare-piper.py
 ./scripts/build-dev-app.sh
 open artifacts/HangosKonyv.app
 ```
 
-Az így létrejövő alkalmazásablakból választható ki a TXT-fájl, látható az előnézet, elindítható a generálás, és a kész MP3 az ablak saját lejátszójával hallgatható meg. A lejátszás csak a Lejátszás gombra indul, bármikor szüneteltethető vagy leállítható; nincs automatikus átadás a Zene alkalmazásnak. Meglévő célfájlt nem ír felül; új nevet kell választani. Ha az előnézet óta megváltozott a forrásszöveg, az alkalmazás új kiválasztást kér.
+A rögzített Imre-modell egyszeri letöltése körülbelül 63 MB. A fájlok ellenőrzőösszegét az előkészítés és az első használat ellenőrzi. A generálás a Piper eredeti alapbeállításaival működik; a 22 050 Hz-es hang veszteségmentes belső formátumba alakítása megőrzi a tempót és hangmagasságot.
 
-A teljes kiválasztott szöveg automatikusan végigfut; belső részeket nem kell jóváhagyni és nincs külön részexport. A mondatok és önálló bekezdések határain dolgozik. A férfihangot az elfogadott minta teljes két mondatából álló, pontos átirattal párosított referencia rögzíti. Az audió és annak átirata együtt kerül a modellhez; az azonos hangutasítás vagy véletlenmag önmagában nem elég. A részek aktív beszédszintjét egységesítjük, majd egyszer, a végén készül az MP3. A természetesség emberi minőségi átvétele továbbra is nyitott.
-
-A teljes hanganyag nem kerül egyszerre RAM-ba: a modell egy szövegrész hangját tartja memóriában, a hangrészek folyamatosan lemezre kerülnek, és egyszer, a végén készül el az MP3. Az átmeneti tárhely a hanghosszal nő, a teljes modell kontextusához szükséges memória a legnagyobb feldolgozott mondat méretétől is függ. Egyetlen rendkívül hosszú, mondat- és bekezdéshatár nélküli szöveg továbbra is elérheti a modell erőforráskorlátait; a rendszer nem csonkolja észrevétlenül.
-
-Ez fejlesztői alkalmazáscsomag: az aktuális forrásmappát, annak Python-környezetét, modelljét és a helyi FFmpeg-et használja. Nem önálló telepítő és nem a későbbi DMG. A Markdown, megszakítás utáni folytatás, első modellletöltés és önálló csomagolás külön feladatok. A hosszú fájlok többperces minőségi átvétele folyamatban van.
-
-Generálás közben a normál kilépés figyelmeztetést ad, mert ez a változat még nem képes folytatni a megszakadt munkát. A kényszerített bezárás nem támogatott munkamenet. A helyi futtatónaplók a `.local/logs` mappába kerülnek; nem kerülnek Gitbe.
-
-## Fejlesztői ellenőrzés
+## Ellenőrzés
 
 ```sh
-.venv/bin/python -m unittest discover -s tests -v
+AUDIOBOOK_REAL_PIPER_TEST=1 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m mypy audiobook --check-untyped-defs --ignore-missing-imports
-swift build
 ```
 
-Az automatizált ellenőrzések a teljes generálási feladat nyilvános határát használják. Csak a külső beszédmodell helyett adnak szabályozható teszthangot; a fájlkezelés és az MP3-kódolás valódi. A valódi GPU-s modellpróba, a felület és a böngészős lejátszás külön integrációs ellenőrzés.
+A tesztek a teljes generálási feladat nyilvános határát használják. A valódi Piper-próba a létrejövő hang hallhatóságát, dekódolását és időtartamát ellenőrzi; a kiejtés és természetesség meghallgatással fogadható el. A célgépes hosszú próba 5395 karakterből 9,64 másodperc alatt körülbelül 6 perces MP3-at készített; a hosszú hang emberi átvétele még nyitott. [Megvalósítás és mérések](docs/implementation-issue-13.md).
 
-## Projekt
+A lecserélt nagy modellek és külön próbakörnyezetek kikerültek az aktív munkamappából; csak az Imre modell maradt. A kisebb tesztmaradványok visszaállíthatóan a Kukába kerültek. A további takarításnál a könyvforrások, a felhasználó által mentett hangok és más projektek megmaradnak.
 
-- [Teljes specifikáció](https://github.com/szarkab/audio-book/issues/1)
-- [Első alkalmazásfolyamat](https://github.com/szarkab/audio-book/issues/2)
-- [Magyar hangpróba eredményei](docs/voice-trial-results.md)
+## Projekt és források
 
-A projekt saját használatra készül. Az eredeti modellsúlyok CC-BY-NC feltételeit a közösségi MLX-átalakítás nem írja felül; a források a hangpróba dokumentációjában találhatók.
+- [Aktuális Piper Imre-feladat](https://github.com/szarkab/audio-book/issues/13)
+- [Eredeti termékspecifikáció](https://github.com/szarkab/audio-book/issues/1)
+- [Piper motor](https://github.com/OHF-Voice/piper1-gpl) — GPL-3.0
+- [Imre-modellkártya](https://huggingface.co/rhasspy/piper-voices/blob/cf910fb59f1d79ab3b625a63993a108751c6c25d/hu/hu_HU/imre/medium/MODEL_CARD) — CC0 adathalmaz
+
+A korábbi modellkísérletek dokumentumai történeti feljegyzések; az aktuális alkalmazás kizárólag Piper Imrét használ.

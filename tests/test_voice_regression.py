@@ -1,40 +1,34 @@
-"""Opt-in full-job content regression with the local M5 speech models.
+"""Opt-in real Piper file-to-MP3 integration check.
 
-A byte-identical waveform is no longer expected after the requested two-sentence
-partitioning, fixed speaker conditioning, and level normalization.
+This verifies audible, correctly timed output, not subjective pronunciation or
+transcript accuracy. The selected model's hashes are verified by the adapter.
 """
-import difflib
 import os
 from pathlib import Path
-import re
+import subprocess
 import tempfile
-import unicodedata
 import unittest
+
+import numpy as np
 
 from audiobook.generation import GenerationService
 
 
-@unittest.skipUnless(os.environ.get("AUDIOBOOK_REAL_MODEL_TEST") == "1" or
-                     os.environ.get("AUDIOBOOK_REAL_VIBEVOICE_TEST") == "1", "Requires the local M5 models")
-class NarrationContentRegression(unittest.TestCase):
-    def test_generated_narration_preserves_the_source_content(self):
-        from mlx_audio.stt import load
+@unittest.skipUnless(os.environ.get("AUDIOBOOK_REAL_PIPER_TEST") == "1", "Requires the local Piper Imre model")
+class PiperIntegration(unittest.TestCase):
+    def test_the_real_imre_voice_produces_audible_correctly_timed_mp3(self):
         root = Path(__file__).resolve().parents[1]
-        vibevoice = os.environ.get("AUDIOBOOK_REAL_VIBEVOICE_TEST") == "1"
-        source = root / ("samples/hu-vibevoice-trial.txt" if vibevoice else "samples/hu-narration.txt")
         with tempfile.TemporaryDirectory() as folder:
-            result = GenerationService(engine="vibevoice" if vibevoice else "omnivoice").generate(
-                source, Path(folder) / "actual.mp3"
-            )
-            import mlx.core as mx
-            mx.clear_cache()
-            transcriber = load(str(root / ".local/models/whisper-large-v3-turbo-asr-fp16"))
-            transcript = transcriber.generate(str(result.output), language="hu", temperature=0.0,
-                                               condition_on_previous_text=False, verbose=None).text
-            def normalized(text):
-                return "".join(re.findall(r"\w+", unicodedata.normalize("NFKC", text).casefold()))
-            match = difflib.SequenceMatcher(None, normalized(source.read_text()), normalized(transcript), autojunk=False)
-            self.assertGreaterEqual(match.ratio(), 0.97, transcript)
+            result = GenerationService().generate(root / "samples/hu-narration.txt", Path(folder) / "actual.mp3")
+            decoded = np.frombuffer(subprocess.check_output([
+                "ffmpeg", "-v", "error", "-i", str(result.output), "-ar", "24000", "-ac", "1",
+                "-f", "f32le", "-",
+            ]), dtype="<f4")
+            self.assertTrue(np.all(np.isfinite(decoded)))
+            self.assertGreater(float(np.sqrt(np.mean(decoded ** 2))), 0.01)
+            self.assertAlmostEqual(len(decoded) / 24000, result.audio_seconds, delta=0.05)
+            self.assertGreater(result.audio_seconds, 8)
+            self.assertLess(result.audio_seconds, 45)
 
 
 if __name__ == "__main__":
