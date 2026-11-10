@@ -175,6 +175,24 @@ class LongGenerationTests(unittest.TestCase):
         self.assertTrue(all(sum(sentence in part for sentence in sentences) <= 2 for part in spoken), spoken)
         self.assertEqual("".join(spoken), text)
 
+    def test_numbers_at_sentence_ends_do_not_hide_the_two_sentence_limit(self):
+        sentences = ["Az első szám a 12.", "A második szám a 13.",
+                     "A harmadik szám a 14.", "Ez a felsorolás vége."]
+        text = " ".join(sentences)
+        self.source.write_text(text, encoding="utf-8")
+        spoken = []
+        def capture(part, destination, notify):
+            spoken.append(part)
+            reference_speech(part, destination, notify)
+        GenerationService(speech_renderer=capture).generate(self.source, self.root / "számok.mp3")
+        self.assertTrue(all(sum(sentence in part for sentence in sentences) <= 2 for part in spoken), spoken)
+        self.assertEqual("".join(spoken), text)
+        date_sentence = "A dátum 2026. 11. 10. volt."
+        self.source.write_text("A " + "a" * 380 + ". " + date_sentence)
+        spoken.clear()
+        GenerationService(speech_renderer=capture).generate(self.source, self.root / "dátum.mp3")
+        self.assertTrue(any(date_sentence in part for part in spoken), spoken)
+
     def test_quiet_and_loud_model_parts_are_assembled_at_a_consistent_level(self):
         self.source.write_text("Júlia kilépett. A kertben csend volt. Péter olvasott. A nap kisütött.", encoding="utf-8")
         def varying_volume(part, destination, notify):

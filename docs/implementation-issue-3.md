@@ -18,7 +18,7 @@ A felhasználó az első hosszú mintában kihagyásokat, ismétlésszerű befag
 
 A bevezetett, elfogadott szintetikus mintából képzett hangreferenciás módot különválasztottuk a hosszabb szövegrészektől és az időbecsléstől. Az azonos szövegen végzett valódi M5-regressziós próba az új referencia-kondicionálással hibázott; kizárólag a referencia-kondicionálás kikapcsolásával az eredeti, elfogadott mintával pontosan azonos kimenet állt helyre. A referencia-kódolást és a hozzá tartozó futtatási állományokat ezután eltávolítottuk. Ez a konkrét konfiguráció hibáját igazolja, nem általános állítás a hangklónozásról.
 
-A jó minta tartós regressziós tesztje: `AUDIOBOOK_REAL_MODEL_TEST=1 .venv/bin/python -m unittest discover -s tests -p test_voice_regression.py -v`. A rögzített M5-környezetben az elfogadott férfimintával egyező dekódolt hangot követeli meg. Ez nem természetességi pontozó más szövegekre.
+A teljes generálás tartós tartalmi regressziós tesztje: `AUDIOBOOK_REAL_MODEL_TEST=1 .venv/bin/python -m unittest discover -s tests -p test_voice_regression.py -v`. A helyi M5-modell kimenetét helyi ASR-rel összeveti a forrással, legalább 0,97 normalizált karakterhasonlóságot követelve. A korábbi hullámforma-azonossági ellenőrzést a kért kétmondatos bontás és hangerő-kiegyenlítés miatt kiváltotta. Ez nem természetességi pontozó.
 
 ## Helyi tartalmi ellenőrzés
 

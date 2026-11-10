@@ -22,8 +22,10 @@ def _sentence_end(text: str, boundary: re.Match[str]) -> bool:
         token = re.search(r"(\w+)$", before)
         if token:
             word = token.group()
-            if word.casefold() in _ABBREVIATIONS or word.isdecimal():
+            if word.casefold() in _ABBREVIATIONS:
                 return False
+            if word.isdecimal() and following[:1].isdecimal():
+                return False  # Numeric date components continue the same sentence.
             if len(word) == 1 and word.isalpha():
                 return False
             if re.fullmatch(r"[IVXLCDM]+", word):
