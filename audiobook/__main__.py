@@ -23,8 +23,9 @@ MESSAGES = {
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["preview", "generate"])
-    parser.add_argument("source", type=Path)
+    parser.add_argument("command", choices=["preview", "generate", "model-status", "download-model"])
+    parser.add_argument("source", type=Path, nargs="?")
+    parser.add_argument("--model-path", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--expected-digest")
     parser.add_argument("--speed", type=float, default=1.0)
@@ -46,7 +47,15 @@ def main() -> int:
 
     started = time.perf_counter()
     try:
-        service = GenerationService()
+        service = GenerationService(model_path=args.model_path)
+        if args.command == "model-status":
+            send(asdict(service.model_status()))
+            return 0
+        if args.command == "download-model":
+            service.prepare_model(notify=lambda event: send(asdict(event)))
+            return 0
+        if args.source is None:
+            raise GenerationError("Válassz ki egy TXT-fájlt.")
         if args.command == "preview":
             preview = service.preview(args.source)
             send({"state": "ready", **asdict(preview)})

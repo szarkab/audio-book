@@ -8,6 +8,11 @@ struct WorkerEvent: Decodable, Sendable {
     let message: String?
     let completedCharacters: Int?
     let totalCharacters: Int?
+    let completedBytes: Int?
+    let totalBytes: Int?
+    let diskBytes: Int?
+    let source: String?
+    let licenseSource: String?
 }
 
 struct WorkerFailure: LocalizedError {
@@ -69,7 +74,7 @@ struct Backend: Sendable {
                         process.waitUntilExit()
                         throw WorkerFailure(message: "Nem olvasható a feladat állapota. Próbáld újra.")
                     }
-                    if event.state == "ready" || event.state == "completed" { terminalEvent = true }
+                    if ["ready", "completed", "model_ready", "model_missing", "model_damaged"].contains(event.state) { terminalEvent = true }
                     if event.state == "failed" { failure = event.message ?? "A generálás nem sikerült." }
                     await onEvent(event)
                 }

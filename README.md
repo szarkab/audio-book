@@ -4,7 +4,7 @@ Magyar UTF-8 TXT-fájlok helyi felolvasása az elfogadott **Piper Imre** férfih
 
 ## Indítás
 
-A jelenlegi fejlesztői gépen az egyetlen alkalmazás az `artifacts/HangosKonyv.app`. Válassz TXT-fájlt, ellenőrizd az előnézetet, majd indítsd az MP3-készítést. A kész hang csak a Lejátszás gombra indul; szüneteltethető, leállítható és tekerhető. Meglévő MP3-at nem ír felül, az előnézet óta megváltozott forrásnál új kiválasztást kér.
+A jelenlegi fejlesztői gépen az egyetlen alkalmazás az `artifacts/HangosKonyv.app`. Első használatkor az **Imre-hang letöltése** gomb beszerzi az ellenőrzött 63,2 MB-os modellt; ehhez legalább 128 MB szabad hely kell. A felület jelzi a hiányzó, letöltés alatt álló, hibás és kész állapotot, hiba után a letöltés újrapróbálható. Az eredet és az adat-/motorlicenc hivatkozásai is elérhetők. A kész modell után a generálás offline működik. Válassz TXT-fájlt, ellenőrizd az előnézetet, majd indítsd az MP3-készítést. A kész hang csak a Lejátszás gombra indul; szüneteltethető, leállítható és tekerhető. Meglévő MP3-at nem ír felül, az előnézet óta megváltozott forrásnál új kiválasztást kér.
 
 A **Felolvasás beállításai…** gombbal MP3-készítés előtt állítható a tempó, a ritmus és hang változatossága, a kimeneti hangerő, a hangerő-normalizálás és az extra mondatszünet. A kimeneti hangerő a mentett fájlt módosítja, a lejátszó hangerejétől függetlenül. A csúcskorlát megakadályozza a túlvezérlést. Az **Elfogadott alapértékek visszaállítása** minden értéket visszaállít: 1× tempó, 0,333 ritmus, 0,5 hangváltozatosság, 1× hangerő, bekapcsolt normalizálás, 0 s extra szünet. A választás az app bezárásáig marad meg, és a futó generálás alatt nem módosítható. Külön hangsúlyozás-szabályzó nincs.
 
@@ -12,7 +12,7 @@ A biztos sorszámos alakok 1–100 között betűs alakban jelennek meg az előn
 
 A teljes fájl köztes jóváhagyás nélkül feldolgozódik. A rövid belső egységek veszteségmentes PCM-ben állnak össze a lemezen, majd egyszer készül az MP3. A forrásfájl változatlan marad.
 
-Ez fejlesztői alkalmazás: a projekt Python-környezetét, helyi modelljét és FFmpeg-jét használja. A további feladatok a sorszámfinomítás, az alkalmazáson belüli modellbeszerzés, valamint az önálló DMG saját arculattal, színekkel és appikonnal. A végső átvétel a telepített helyi alkalmazásban történik. A felhasználó kérésére az MD-beolvasás és a generálás szüneteltetése/tartós folytatása kikerült a tervből; böngészős felület vagy böngészős próba nem szükséges.
+Ez fejlesztői alkalmazás: a projekt Python-környezetét, helyi modelljét és FFmpeg-jét használja. A további feladatok a sorszámkiejtés meghallgatásos elfogadása, valamint az önálló DMG saját arculattal, színekkel és appikonnal. A végső átvétel a telepített helyi alkalmazásban történik. A felhasználó kérésére az MD-beolvasás és a generálás szüneteltetése/tartós folytatása kikerült a tervből; böngészős felület vagy böngészős próba nem szükséges.
 
 ## Fejlesztői előkészítés
 
@@ -26,7 +26,7 @@ uv pip sync --python .venv/bin/python requirements-dev.txt
 open artifacts/HangosKonyv.app
 ```
 
-A rögzített Imre-modell egyszeri letöltése körülbelül 63 MB. A fájlok ellenőrzőösszegét az előkészítés és az első használat ellenőrzi. A generálás a Piper eredeti alapbeállításaival működik; a 22 050 Hz-es hang veszteségmentes belső formátumba alakítása megőrzi a tempót és hangmagasságot.
+A rögzített Imre-modell és ellenőrzött modellkártya egyszeri letöltése körülbelül 63 MB; helye a felhasználó `~/Library/Application Support/HangosKonyv/models/piper-imre` mappája. Fejlesztői próbához az `AUDIOBOOK_MODEL_PATH` felülírhatja ezt. A letöltési tárhelyigény a meglévő és átmeneti példány együttesét is fedezi. A modell a projekt forrásmappájától függetlenül megmarad. A fájlok ellenőrzőösszegét az előkészítés és az első használat ellenőrzi. A generálás a Piper eredeti alapbeállításaival működik; a 22 050 Hz-es hang veszteségmentes belső formátumba alakítása megőrzi a tempót és hangmagasságot.
 
 ## Ellenőrzés
 

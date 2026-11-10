@@ -1,4 +1,6 @@
 import json
+import io
+from types import SimpleNamespace
 from dataclasses import replace
 import math
 from pathlib import Path
@@ -7,6 +9,8 @@ import subprocess
 import tempfile
 import unittest
 import wave
+from unittest.mock import patch
+from urllib.error import URLError
 import numpy as np
 
 from audiobook.generation import GenerationError, GenerationService
@@ -34,6 +38,38 @@ class GenerationTests(unittest.TestCase):
         self.source = self.root / "szöveg.txt"
         self.source.write_text("Júlia az ablakhoz lépett. A kertben csend volt.", encoding="utf-8")
         self.service = GenerationService(speech_renderer=reference_speech)
+
+    def test_failed_model_download_is_not_ready_and_can_be_retried(self):
+        service = GenerationService(model_path=self.root / "models" / "piper-imre")
+        self.assertEqual(service.model_status().state, "model_missing")
+        with patch("urllib.request.urlopen", side_effect=URLError("offline")) as network:
+            for _ in range(2):
+                events = []
+                with self.assertRaisesRegex(GenerationError, "letölt|hálózat"):
+                    service.prepare_model(notify=events.append)
+                self.assertEqual(service.model_status().state, "model_missing")
+                self.assertFalse(any(event.state == "model_ready" for event in events))
+            self.assertEqual(network.call_count, 2)
+        self.assertEqual(list((self.root / "models").glob("piper-download-*")), [])
+
+    def test_incomplete_model_download_never_becomes_usable(self):
+        service = GenerationService(model_path=self.root / "models" / "piper-imre")
+        with patch("urllib.request.urlopen", return_value=io.BytesIO(b"truncated model")):
+            with self.assertRaisesRegex(GenerationError, "sérült|hiányos"):
+                service.prepare_model()
+        self.assertEqual(service.model_status().state, "model_missing")
+        self.assertEqual(list((self.root / "models").glob("piper-download-*")), [])
+        with self.assertRaisesRegex(GenerationError, "Hiányzik"):
+            service.generate(self.source, self.root / "hiányos.mp3")
+        self.assertFalse((self.root / "hiányos.mp3").exists())
+
+    def test_insufficient_model_disk_space_fails_before_network_access(self):
+        service = GenerationService(model_path=self.root / "models" / "piper-imre")
+        with patch("shutil.disk_usage", return_value=SimpleNamespace(free=0)), patch("urllib.request.urlopen") as network:
+            with self.assertRaisesRegex(GenerationError, "tárhely"):
+                service.prepare_model()
+            network.assert_not_called()
+        self.assertEqual(service.model_status().state, "model_missing")
 
     def test_selected_text_becomes_one_playable_mp3(self):
         preview = self.service.preview(self.source)

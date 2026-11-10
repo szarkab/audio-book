@@ -14,8 +14,67 @@ final class GenerationModel: ObservableObject {
     @Published var status = "Válassz egy magyar TXT-fájlt."
     @Published var error: String?
     @Published var settings = NarrationSettings()
+    @Published var modelState = "model_checking"
+    @Published var modelMessage = "A narrátor ellenőrzése…"
+    @Published var modelCompletedBytes = 0
+    @Published var modelTotalBytes = 0
+    @Published var modelDiskBytes = 0
+    @Published var modelSource: URL?
+    @Published var modelLicenseSource: URL?
+    var modelReady: Bool { modelState == "model_ready" }
     let playback = AudioPlayback()
     private let backend = Backend()
+
+    func refreshModel() async {
+        guard !busy else { return }
+        busy = true
+        defer { busy = false }
+        do {
+            try await backend.run(arguments: ["model-status"]) { [self] event in updateModel(event) }
+        } catch {
+            modelState = "model_failed"
+            modelMessage = "A narrátor ellenőrzése sikertelen."
+            show(error)
+        }
+    }
+
+    func downloadModel() {
+        guard !busy else { return }
+        busy = true
+        error = nil
+        modelState = "model_downloading"
+        modelMessage = "Az Imre-hang letöltése…"
+        modelCompletedBytes = 0
+        status = "A modell beszerzése folyamatban van…"
+        Task {
+            defer { busy = false }
+            do {
+                try await backend.run(arguments: ["download-model"]) { [self] event in updateModel(event) }
+                status = source == nil ? "Válassz egy magyar TXT-fájlt." : "A szöveg készen áll a felolvasásra."
+            } catch {
+                modelState = "model_failed"
+                modelMessage = "A letöltés nem sikerült. Újrapróbálható."
+                show(error)
+            }
+        }
+    }
+
+    private func updateModel(_ event: WorkerEvent) {
+        guard event.state.hasPrefix("model_") else { return }
+        modelState = event.state
+        modelCompletedBytes = event.completedBytes ?? 0
+        modelTotalBytes = event.totalBytes ?? 0
+        modelDiskBytes = event.diskBytes ?? 0
+        modelSource = event.source.flatMap(URL.init(string:))
+        modelLicenseSource = event.licenseSource.flatMap(URL.init(string:))
+        switch event.state {
+        case "model_ready": modelMessage = "Imre-hang: használatra kész · Offline működés"
+        case "model_missing": modelMessage = "Az Imre-hang még nincs letöltve."
+        case "model_damaged": modelMessage = "Az Imre-hang hiányos vagy sérült. Újra letölthető."
+        case "model_downloading": modelMessage = "Az Imre-hang letöltése…"
+        default: break
+        }
+    }
 
     func selectSource() {
         let panel = NSOpenPanel()
@@ -48,7 +107,7 @@ final class GenerationModel: ObservableObject {
     }
 
     func generate() {
-        guard let source, !busy else { return }
+        guard let source, !busy, modelReady else { return }
         playback.stop()
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.mp3]
@@ -124,6 +183,7 @@ struct ContentView: View {
                 Label("Helyben fut", systemImage: "desktopcomputer")
                     .font(.callout).foregroundStyle(.secondary)
             }
+            ModelDownloadView(model: model)
             HStack {
                 Button("TXT-fájl kiválasztása…", systemImage: "doc.badge.plus") { model.selectSource() }
                     .disabled(model.busy)
@@ -175,14 +235,15 @@ struct ContentView: View {
                 }
                 Button("MP3 készítése", systemImage: "waveform") { model.generate() }
                     .buttonStyle(.borderedProminent)
-                    .disabled(model.source == nil || model.busy)
+                    .disabled(model.source == nil || model.busy || !model.modelReady)
                     .accessibilityIdentifier("generate")
             }
             Text("Piper Imre · Magyar férfihang · MP3")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(28)
-        .frame(minWidth: 760, minHeight: 720)
+        .frame(minWidth: 760, minHeight: 800)
+        .task { await model.refreshModel() }
         .sheet(isPresented: $showingSettings) {
             NarrationSettingsView(settings: $model.settings, busy: model.busy)
         }
@@ -196,7 +257,7 @@ struct HangosKonyvApp: App {
         WindowGroup {
             ContentView(model: GenerationModel.shared)
         }
-        .defaultSize(width: 900, height: 790)
+        .defaultSize(width: 900, height: 880)
         .commands {
             CommandGroup(replacing: .newItem) { }
         }

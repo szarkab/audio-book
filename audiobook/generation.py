@@ -12,6 +12,7 @@ import wave
 
 from .text import prepare_narration, speech_parts
 from .settings import NarrationSettings
+from .models import ModelError, ModelStatus, ModelStore, default_model_path
 from .audio import append_speech_part
 from typing import Callable
 
@@ -47,9 +48,20 @@ class GenerationService:
     def __init__(self, speech_renderer: SpeechRenderer | None = None, model_path: Path | None = None):
         from .speech import PiperSpeechRenderer
 
-        self.speech_renderer = speech_renderer or PiperSpeechRenderer(
-            model_path or Path(__file__).resolve().parents[1] / ".local/models/piper-imre"
-        )
+        self.models = ModelStore(model_path or default_model_path())
+        self.speech_renderer = speech_renderer or PiperSpeechRenderer(self.models.path)
+
+    def model_status(self) -> ModelStatus:
+        try:
+            return self.models.status()
+        except OSError as error:
+            raise GenerationError("A modell mappája nem olvasható. Ellenőrizd a hozzáférést.") from error
+
+    def prepare_model(self, *, notify: Callable[[ModelStatus], None] = lambda event: None) -> ModelStatus:
+        try:
+            return self.models.prepare(notify)
+        except ModelError as error:
+            raise GenerationError(str(error)) from error
 
     def preview(self, source: Path) -> SourcePreview:
         if source.suffix.lower() != ".txt":

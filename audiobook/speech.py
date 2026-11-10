@@ -1,5 +1,4 @@
 """The user-approved Hungarian Piper Imre voice, entirely local."""
-import hashlib
 from pathlib import Path
 import shutil
 import subprocess
@@ -7,13 +6,8 @@ from typing import Any, Callable
 import wave
 
 from .settings import NarrationSettings
+from .models import ModelStore
 
-
-MODEL_REVISION = "cf910fb59f1d79ab3b625a63993a108751c6c25d"
-MODEL_FILES = {
-    "hu_HU-imre-medium.onnx": "bcec8e6e5404baca0fcaf2895da4d02d414d3340b9f80bd94a2112b5c67061ae",
-    "hu_HU-imre-medium.onnx.json": "760857edbd31947a853842df5833bd16aa1f660feabe11fbebb0a378bf8328c5",
-}
 
 
 class PiperSpeechRenderer:
@@ -25,14 +19,11 @@ class PiperSpeechRenderer:
         from .generation import GenerationError
 
         if self._voice is None:
-            for name, expected in MODEL_FILES.items():
-                path = self.model_path / name
-                if not path.is_file():
-                    raise GenerationError("Hiányzik a Piper Imre modell. Ellenőrizd a modell telepítését.")
-                with path.open("rb") as stream:
-                    actual = hashlib.file_digest(stream, "sha256").hexdigest()
-                if actual != expected:
-                    raise GenerationError("A Piper Imre modell sérült vagy másik hangra cserélődött.")
+            state = ModelStore(self.model_path).status().state
+            if state == "model_missing":
+                raise GenerationError("Hiányzik a Piper Imre modell. Töltsd le az alkalmazásból.")
+            if state != "model_ready":
+                raise GenerationError("A Piper Imre modell sérült vagy másik hangra cserélődött. Töltsd le újra.")
             from piper import PiperVoice
 
             notify("loading_model")
