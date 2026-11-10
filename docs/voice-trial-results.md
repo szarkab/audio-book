@@ -2,7 +2,7 @@
 
 Dátum: 2026-11-10. Kapcsolódó specifikáció: https://github.com/szarkab/audio-book/issues/1
 
-Állapot: a helyi generálás és MP3-dekódolás ellenőrzött; a magyar beszéd természetessége és szöveghűsége felhasználói meghallgatásra vár. Narrátorhang és végleges modell még nincs elfogadva.
+Állapot: a helyi generálás és MP3-dekódolás ellenőrzött. A felhasználó meghallgatta mindkét hangot: a férfihangot szinte tökéletesnek ítélte, és kizárólag azt választotta a folytatáshoz; a női hang nem kerül az első alkalmazásváltozatba. Az OmniVoice-bfloat16 férfiprofil a fejlesztési alap. A hosszú szövegek hangállandósága, teljes szöveghűsége és a végleges MP3-bitrátája még ellenőrizendő.
 
 ## Környezet
 
@@ -39,4 +39,4 @@ A Transformers betöltéskor modelltipus-figyelmeztetést adott. A konkrét mode
 
 ## Következő minőségi kapu
 
-A felhasználó hallgassa meg a narrációs és kiejtési mintákat: természetes-e a magyar hang, megfelelő-e az előadás és a tempó, vannak-e kihagyások, ismétlések vagy rosszul ejtett szavak. Ezt követően döntünk a további hangkeresésről vagy a hosszabb, egybefüggő próbáról. Ez még nem teljes könyves, folytathatósági vagy DMG-átvételi teszt.
+A rövid férfihangos minta elfogadott fejlesztési kiindulópont. Következő lépés a kiválasztott férfihang hosszabb, egybefüggő szövegen történő ellenőrzése: maradjon állandó a narrátorhang és a nyugodt előadás, ne legyen kihagyás, ismétlés vagy rosszul ejtett szó. A hangtervezési utasítás és a véletlenmag önmagában nem bizonyít tartós beszélőazonosságot; a végleges megoldásnak ezt hosszabb próbán kell igazolnia. A korábbi női minták történeti összehasonlításként maradnak meg. A rövid próba nem teljes könyves, folytathatósági vagy DMG-átvételi teszt.
