@@ -1,32 +1,34 @@
-"""Opt-in M5 regression against the narrator sample the user accepted.
+"""Opt-in full-job content regression with the local M5 speech models.
 
-This checks identity of a known-good sample, not general speech naturalness.
+A byte-identical waveform is no longer expected after the requested two-sentence
+partitioning, fixed speaker conditioning, and level normalization.
 """
-import hashlib
+import difflib
 import os
 from pathlib import Path
-import subprocess
+import re
 import tempfile
+import unicodedata
 import unittest
 
 from audiobook.generation import GenerationService
 
 
-@unittest.skipUnless(os.environ.get("AUDIOBOOK_REAL_MODEL_TEST") == "1", "Requires the local M5 model")
-class ApprovedVoiceRegression(unittest.TestCase):
-    def test_known_good_narration_is_preserved(self):
+@unittest.skipUnless(os.environ.get("AUDIOBOOK_REAL_MODEL_TEST") == "1", "Requires the local M5 models")
+class NarrationContentRegression(unittest.TestCase):
+    def test_generated_narration_preserves_the_source_content(self):
+        from mlx_audio.stt import load
         root = Path(__file__).resolve().parents[1]
+        source = root / "samples/hu-narration.txt"
         with tempfile.TemporaryDirectory() as folder:
-            result = GenerationService().generate(root / "samples/hu-narration.txt", Path(folder) / "actual.mp3")
-            def decoded_hash(path):
-                pcm = subprocess.check_output([
-                    "ffmpeg", "-v", "error", "-i", str(path), "-f", "s16le", "-acodec", "pcm_s16le", "-",
-                ])
-                return hashlib.sha256(pcm).hexdigest()
-            self.assertEqual(
-                decoded_hash(result.output), decoded_hash(root / "tests/fixtures/approved-male.mp3"),
-                "The known-good male sample changed; this does not approve the new voice quality.",
-            )
+            result = GenerationService().generate(source, Path(folder) / "actual.mp3")
+            transcriber = load(str(root / ".local/models/whisper-large-v3-turbo-asr-fp16"))
+            transcript = transcriber.generate(str(result.output), language="hu", temperature=0.0,
+                                               condition_on_previous_text=False, verbose=None).text
+            def normalized(text):
+                return "".join(re.findall(r"\w+", unicodedata.normalize("NFKC", text).casefold()))
+            match = difflib.SequenceMatcher(None, normalized(source.read_text()), normalized(transcript), autojunk=False)
+            self.assertGreaterEqual(match.ratio(), 0.97, transcript)
 
 
 if __name__ == "__main__":

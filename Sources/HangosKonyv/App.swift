@@ -65,7 +65,7 @@ final class GenerationModel: ObservableObject {
             defer { busy = false }
             do {
                 try await backend.run(arguments: [
-                    "generate", source.path, "--output", target.path, "--expected-digest", expectedDigest
+                    "generate", source.path, "--output", target.path, "--expected-digest", expectedDigest, "--speed", "1.1"
                 ]) { [self] event in
                     if let message = event.message { status = message }
                     if let completed = event.completedCharacters, let total = event.totalCharacters, total > 0 {
@@ -168,7 +168,7 @@ struct ContentView: View {
                     .disabled(model.source == nil || model.busy)
                     .accessibilityIdentifier("generate")
             }
-            Text("Fejlesztői változat · UTF-8 kódolású TXT · Férfi narrátor · MP3")
+            Text("Fejlesztői változat · Férfi narrátor · 1,1× tempó · MP3")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(28)

@@ -1,0 +1,15 @@
+{
+  "text": "Az esti fény lassan elhalványult a dombok mögött. Júlia becsukta a könyvet, és az ablakhoz lépett.",
+  "duration_seconds": 8.07,
+  "last_word": {
+    "word": " lépett.",
+    "start": 7.42,
+    "end": 7.92,
+    "probability": 0.99267578125
+  },
+  "reference_wav_sha256": "f1b9f105648106ad881e52b33b1c8e84bba3d3f29e898e3f34318455601ea951",
+  "source": "Complete first two sentences of the user-approved synthetic male narration",
+  "model": "mlx-community/OmniVoice-bfloat16",
+  "model_revision": "6119f7072580cc30c3cbdf496269216b03ad9742",
+  "usage": "Personal, non-commercial use; synthetic source, upstream model CC-BY-NC"
+}

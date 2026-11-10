@@ -51,3 +51,20 @@ Valódi felületi próba: némított lejátszás elindult, a Szünet gomb megál
 ## Záró ellenőrzés
 
 A célzott generálási és hosszúszöveg-tesztek, a Python-típusellenőrzés és a Swift-fordítás sikeresek. A végső két tengelyű review és teljes tesztfutás eredménye lezáráskor rögzítendő. A természetességi átvétel továbbra is nyitott.
+
+
+## Újabb felhasználói visszajelzés és véglegesített javítási irány
+
+A felhasználó a referencia nélküli hosszú változatot is elutasította: mondatonként változó hangszínt, hangerőugrást és ismétlésszerű újrakezdéseket jelzett. A jó szövegátírás tehát nem bizonyította a narrátor állandóságát. Kifejezett kérése alapján most legfeljebb kétmondatos belső egységek készülnek, továbbra is egyetlen végső MP3-ba. A tempó módosításához nem futott külön hangolási vagy meghallgatási kísérlet: a CLI/app 1,1× alapértéke egyszerű, hangmagasságot megőrző utófeldolgozás.
+
+A korábbi levágott, átirat nélküli referencia helyett az elfogadott minta teljes első két mondatát használjuk, pontosan párosított átirattal. A referencia 8,07 másodperces, a második mondat végének helyi szóidőzítésével és kis biztonsági szünettel. Nincs automatikus referencia-levágás vagy szüneteltávolítás. A referencia audio-tokenjei és szövege minden célrészhez együtt kerülnek a modellbe. Az időbecslés eredeti kalibrációja maradt; az új, gyorsabb referenciából becsült óra külön próba volt, nem került élesbe.
+
+Három különböző kétmondatos szövegen az átirattal párosított profil mindháromszor 0 szövegeltérést adott a helyi ASR szerint. A külön CAMPPlus beszélődiagnosztika az eredeti férfimintához 0,945–0,955 koszinusz-hasonlóságot adott, a három rész között 0,959–0,970-et. A referencia nélküli kontroll az eredeti férfimintához 0,497–0,611-et, a részek között 0,759–0,781-et adott. A korábbi női kontroll és a férfiminta hasonlósága 0,383 volt. Ezek relatív összehasonlító értékek, nem valószínűségek vagy természetességi százalékok.
+
+A teljes új, 2446 karakteres minta 20 belső részből készült el, 1,1× exporttempóval. A hanghossz körülbelül 222,07 másodperc, a futási idő 162,43 másodperc, a folyamat csúcs-RSS-e 2 310 963 200 byte, az átmeneti hangfájlok legnagyobb összeadott logikai mérete 14 391 501 byte, az MP3 2 666 061 byte. A teljes átírásban 384 várt és 384 felismert szó mellett a karakteres eltérés 0,101%, a szószintű szerkesztési eltérés 2,60% volt. A szószintű mutatót az egybe-/különírási eltérések is növelik.
+
+A teljes hang mind a 20 részének beszélő-összehasonlításában az eredeti férfimintához mért minimum 0,907, átlag 0,943; a szomszédos részek között minimum 0,897, átlag 0,944. Ez az állandóságot támogató összehasonlító bizonyíték, az emberi természetességi átvételt nem helyettesíti.
+
+A részek 20 ms-os képkockáiból becsült aktív beszédszint alapján egységes hangerőt kapnak, konzervatív csúcskorláttal. Egy szándékosan húszszoros szintugrást tartalmazó teljesfolyamat-teszt először hibázott, a javítás után sikeres lett. Nem távolítunk el szavakat vagy hangrészeket, és a részeken belüli dinamika arányai megmaradnak. A feldolgozás veszteségmentes PCM-ben áll össze; nincs részenkénti MP3-újratömörítés.
+
+A helyi diagnosztikai anyagok az `artifacts/issue3-two-sentences` és `artifacts/issue3-final` könyvtárban találhatók, nem kerülnek Gitbe. A beszélődiagnosztika a hivatalos sherpa-onnx kiadás 28 MB-os CAMPPlus modelljét használta; nem része az alkalmazás futtatási függőségeinek. A végső hang a `ketmondatos-ferfi.mp3`. A felhasználó megnyitott mentési ablakát a frissítés közben érintetlenül hagytuk.

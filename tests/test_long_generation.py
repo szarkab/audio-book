@@ -1,4 +1,5 @@
 import json
+import numpy as np
 from pathlib import Path
 import subprocess
 import tempfile
@@ -157,6 +158,40 @@ class LongGenerationTests(unittest.TestCase):
                 GenerationService(speech_renderer=capture).generate(self.source, self.root / f"rövidítés-{index}.mp3")
                 self.assertTrue(any(sentence in part for part in spoken), spoken)
                 self.assertEqual("".join(spoken), text)
+
+    def test_each_internal_speech_input_contains_at_most_two_sentences(self):
+        sentences = [
+            "Júlia az ablakhoz lépett.", "A kertben csend volt.",
+            "Péter kinyitotta a könyvet.", "A szél megmozgatta a leveleket.",
+            "A történet az erdőben folytatódott.", "Lassan beesteledett.",
+        ]
+        text = " ".join(sentences)
+        self.source.write_text(text, encoding="utf-8")
+        spoken = []
+        def capture(part, destination, notify):
+            spoken.append(part)
+            reference_speech(part, destination, notify)
+        GenerationService(speech_renderer=capture).generate(self.source, self.root / "két-mondat.mp3")
+        self.assertTrue(all(sum(sentence in part for sentence in sentences) <= 2 for part in spoken), spoken)
+        self.assertEqual("".join(spoken), text)
+
+    def test_quiet_and_loud_model_parts_are_assembled_at_a_consistent_level(self):
+        self.source.write_text("Júlia kilépett. A kertben csend volt. Péter olvasott. A nap kisütött.", encoding="utf-8")
+        def varying_volume(part, destination, notify):
+            reference_speech(part, destination, notify)
+            with wave.open(str(destination), "rb") as audio:
+                params = audio.getparams()
+                pcm = np.frombuffer(audio.readframes(audio.getnframes()), dtype="<i2").astype(np.float64)
+            pcm *= 0.1 if part.startswith("Júlia") else 2.0
+            with wave.open(str(destination), "wb") as audio:
+                audio.setparams(params)
+                audio.writeframes(pcm.astype("<i2").tobytes())
+        result = GenerationService(speech_renderer=varying_volume).generate(self.source, self.root / "hangerő.mp3")
+        decoded = np.frombuffer(subprocess.check_output([
+            "ffmpeg", "-v", "error", "-i", str(result.output), "-f", "f32le", "-acodec", "pcm_f32le", "-",
+        ]), dtype="<f4")
+        levels = [float(np.sqrt(np.mean(decoded[start:start+3000] ** 2))) for start in [1500, 7500]]
+        self.assertLess(max(levels) / min(levels), 1.4, levels)
 
 
 if __name__ == "__main__":

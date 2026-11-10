@@ -34,17 +34,20 @@ def _sentence_end(text: str, boundary: re.Match[str]) -> bool:
 def speech_parts(text: str) -> Iterator[str]:
     start = 0
     current = ""
+    sentences = 0
     for boundary in _BOUNDARY.finditer(text):
         if not _sentence_end(text, boundary):
             continue
         sentence = text[start:boundary.end()]
-        if current and len(current) + len(sentence) > 400:
+        if current and (sentences >= 2 or len(current) + len(sentence) > 400):
             yield current
             current = ""
+            sentences = 0
         current += sentence
+        sentences += 1
         start = boundary.end()
     tail = text[start:]
-    if current and len(current) + len(tail) > 400:
+    if current and tail and (sentences >= 2 or len(current) + len(tail) > 400):
         yield current
         current = ""
     if current or tail:

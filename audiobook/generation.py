@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import os
 import hashlib
+import math
 import shutil
 import subprocess
 import tempfile
@@ -10,6 +11,7 @@ import unicodedata
 import wave
 
 from .text import speech_parts
+from .audio import append_speech_part
 from typing import Callable
 
 
@@ -65,10 +67,10 @@ class GenerationService:
 
     def generate(
         self, source: Path, output: Path, *, notify: Callable[[JobEvent], None] = lambda event: None,
-        expected_digest: str | None = None,
+        expected_digest: str | None = None, speed: float = 1.0,
     ) -> GenerationResult:
         try:
-            return self._generate(source, output, notify=notify, expected_digest=expected_digest)
+            return self._generate(source, output, notify=notify, expected_digest=expected_digest, speed=speed)
         except GenerationError:
             notify(JobEvent("failed"))
             raise
@@ -81,8 +83,10 @@ class GenerationService:
 
     def _generate(
         self, source: Path, output: Path, *, notify: Callable[[JobEvent], None],
-        expected_digest: str | None,
+        expected_digest: str | None, speed: float,
     ) -> GenerationResult:
+        if not math.isfinite(speed) or not 0.75 <= speed <= 1.5:
+            raise GenerationError("A felolvasási tempó 0,75 és 1,5 közé állítható.")
         preview = self.preview(source)
         if expected_digest is not None and expected_digest != preview.digest:
             raise GenerationError("A forrásszöveg megváltozott az előnézet óta. Válaszd ki újra a fájlt.")
@@ -99,18 +103,7 @@ class GenerationService:
             with pcm.open("wb") as assembled:
                 for part in speech_parts(preview.text):
                     self.speech_renderer(part, wav, lambda state: notify(JobEvent(state, completed, total)))
-                    with wave.open(str(wav), "rb") as audio:
-                        if (audio.getnchannels(), audio.getsampwidth(), audio.getframerate()) != (1, 2, 24000):
-                            raise GenerationError("A beszédmodell nem támogatott hangformátumot adott.")
-                        if audio.getnframes() == 0:
-                            raise GenerationError("A beszédmodell üres hangrészt adott. A hiányos hanganyagot nem mentettük kész MP3-ként.")
-                        expected_bytes = audio.getnframes() * audio.getsampwidth() * audio.getnchannels()
-                        copied_bytes = 0
-                        while frames := audio.readframes(4096):
-                            assembled.write(frames)
-                            copied_bytes += len(frames)
-                        if copied_bytes != expected_bytes:
-                            raise GenerationError("A modell által készített hangrész sérült vagy hiányos. Nem mentettünk csonka MP3-at.")
+                    append_speech_part(wav, assembled)
                     peak_temporary = max(peak_temporary, assembled.tell() + wav.stat().st_size)
                     wav.unlink()
                     completed += len(part)
@@ -119,6 +112,7 @@ class GenerationService:
             subprocess.run([
                 shutil.which("ffmpeg") or "ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error",
                 "-n", "-f", "s16le", "-ar", "24000", "-ac", "1", "-i", str(pcm), "-codec:a", "libmp3lame",
+                *(["-af", f"atempo={speed}"] if speed != 1.0 else []),
                 "-b:a", "96k", str(encoded),
             ], check=True, capture_output=True)
             pcm_bytes = pcm.stat().st_size
@@ -128,4 +122,4 @@ class GenerationService:
             except FileExistsError as error:
                 raise GenerationError("A célfájl már létezik. Válassz másik nevet.") from error
         notify(JobEvent("completed", total, total))
-        return GenerationResult(output, pcm_bytes / 48000, peak_temporary)
+        return GenerationResult(output, pcm_bytes / 48000 / speed, peak_temporary)

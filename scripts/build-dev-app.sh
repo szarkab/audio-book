@@ -12,7 +12,9 @@ root = Path(sys.argv[1])
 app = root / 'artifacts/HangosKonyv.app'
 macos = app / 'Contents/MacOS'
 macos.mkdir(parents=True, exist_ok=True)
-shutil.copy2(root / '.build/debug/HangosKonyv', macos / 'HangosKonyv')
+staged = macos / '.HangosKonyv.pending'
+shutil.copy2(root / '.build/debug/HangosKonyv', staged)
+staged.replace(macos / 'HangosKonyv')
 with (app / 'Contents/Info.plist').open('wb') as stream:
     plistlib.dump({
         'CFBundleIdentifier': 'hu.szarkab.audio-book.dev',

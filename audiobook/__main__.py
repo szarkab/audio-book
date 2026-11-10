@@ -26,6 +26,7 @@ def main() -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--expected-digest")
+    parser.add_argument("--speed", type=float, default=1.1)
     args = parser.parse_args()
     protocol = sys.stdout
 
@@ -47,7 +48,7 @@ def main() -> int:
                 raise GenerationError("Válaszd ki az MP3 mentési helyét.")
             with redirect_stdout(sys.stderr):
                 result = service.generate(args.source, args.output, notify=progress,
-                                          expected_digest=args.expected_digest)
+                                          expected_digest=args.expected_digest, speed=args.speed)
             peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
             metrics = {
                 "audio_seconds": result.audio_seconds,
