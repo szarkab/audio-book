@@ -1,6 +1,6 @@
 # Magyar hangoskönyv-készítő alkalmazás — specifikáció és megvalósítási terv
 
-Állapot: felülvizsgálható tervezet, 2026-11-10. A felhasználói munkamenet egyeztetett; a tesztelési határ jóváhagyása és az issue tracker beállítása még szükséges a publikáláshoz. Az alkalmazás megvalósítása még nem kezdődött el.
+Állapot: felülvizsgálható tervezet, 2026-11-10. A felhasználói munkamenet egyeztetett; a tesztelési határ jóváhagyása még szükséges a publikáláshoz. A projekt issue trackere a GitHub Issues, az öt alapértelmezett triage-címkével. Az alkalmazás megvalósítása még nem kezdődött el.
 
 ## Problem Statement
 
@@ -137,4 +137,4 @@ Ezek jelöltekhez tartozó dokumentációk, nem a célgépen végzett mérés bi
 
 ### Publikálás
 
-Az issue tracker és a triage-címkék beállítását a korábban megkezdett setup-matt-pocock-skills folyamattal kell befejezni. Ez a tervezet még nem publikált issue, és nincs rajta ready-for-agent státusz. Publikáláskor az elfogadott specifikációt a beállított projektkövetőbe kell menteni, az ott rögzített ready-for-agent címkével.
+A projekt issue trackere a szarkab/audio-book GitHub Issues felülete. Az öt alapértelmezett triage-címke elfogadott. Ez a tervezet még nem publikált issue, és nincs rajta ready-for-agent státusz. A tesztelési határ jóváhagyása után az elfogadott specifikációt GitHub-issue-ként kell publikálni, ready-for-agent címkével.
