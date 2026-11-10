@@ -38,7 +38,7 @@ A `73fccdd...095bdd4` diff külön Standards-reviewja 0 dokumentált szabálysé
 
 A külön Spec-review 0 igazolt kódhibát talált az aktív #13-folyamatban. A rögzített eredeti Piper, a normál tempó, a helyi futás, a saját lejátszó és a biztonságos kimenet megfelel az új felhasználói döntésnek. A hosszú hang emberi átvétele és a fennmaradó pontos törlési lista külön lezárandó; az ASR-tartalmi eltérés nincs sikernek minősítve.
 
-Összesítés: Standards 0, Spec 0 fennmaradó kódhiba. A takarítás lezárva; a #13 a hosszú hang visszajelzéséig marad nyitva. Az elvetett #9/#10 VibeVoice-feladatok not_planned állapottal lezárva, a #11/#12 és a további feladatok Piperre és az új függőségekre igazítva.
+Összesítés: Standards 0, Spec 0 fennmaradó kódhiba. A takarítás lezárva. A felhasználó a későbbi hosszú teszt után a jelenlegi Piper-minőséget egyelőre elfogadhatónak minősítette; ez a változat az elfogadott fejlesztési alap. Az elvetett #9/#10 VibeVoice-feladatok not_planned állapottal lezárva, a #11/#12 és a további feladatok Piperre és az új függőségekre igazítva.
 
 
 ## Felhasználói visszajelzés és szünetpróba
@@ -55,3 +55,12 @@ Az eredeti összehasonlítás 11,32 s, a szünetes minta 11,84 s, az ugyanezzel 
 A felhasználó mindkét szünetpróbát gyorsított hatásúnak hallotta, és a korábbi változatot jobbnak ítélte. A próba nem tiszta összehasonlítás az elfogadott korábbi mintával: más szöveg és rögzített véletlenmag is szerepelt, a fonéma-időzítéshez pedig a Piper kiegészítő kimenetét használtuk. Az eredeti modell length_scale alapértéke valóban 1,0; a próbában 1,0 és 1,08 szerepelt. Exportgyorsítás nem történt, de ez nem cáfolja a gyorsított hangzásról adott visszajelzést. A pontos akusztikai ok nincs okságilag elkülönítve.
 
 Az alkalmazás nem kapta meg ezeket a beállításokat, a korábban jobbnak hallott Piper alapváltozat marad. A két elutasított hang, a hozzájuk tartozó kísérleti referencia, jegyzék és saját generáló próbakód eltávolítva. Következő hallásalapú összehasonlításnál ugyanazt a forrást és eredeti generálási alapot kell használni, egyszerre egy tényezőt változtatva.
+
+
+## Elfogadott alap és a gyorsaság magyarázata
+
+A felhasználó 2026-11-10-én a változatlan Piper Imre alapbeállítást egyelőre elfogadhatónak minősítette. A sikertelen szünetpróbák nem kerülnek át az alkalmazásba. A #13 megvalósítása és jóváhagyott takarítása lezárható; a további képességek külön feladatok maradnak.
+
+A telepített Piper 1.8.0 forrásában minden mondat fonémaazonosítóiból egy ONNX-futtatás adja a hangot. A 63,2 MB-os Imre-modell rögzített medium/22 050 Hz változat. Nincs diffúziós lépésszám vagy több számítással magasabb minőséget kérő kapcsoló. A tempó, a ritmus/hanggenerálás véletlenszerűségét vezérlő paraméterek és a hangerő a megszólalást módosítják, nem emelik meg a betanított modell kapacitását. Több CPU-szál vagy GPU-használat önmagában nem jelent jobb hangsúlyozást. A nagyobb MP3-bitrátának a tömörítési veszteségre lehet hatása, a modell kiejtési és prozódiai hibáira nem. A mostani alkalmazásbeállítás és modell változatlan.
+
+Források: [VITS párhuzamos beszédszintézis](https://arxiv.org/abs/2106.06103), [Piper CLI](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/CLI.md), [Imre-modellkártya](https://huggingface.co/rhasspy/piper-voices/blob/cf910fb59f1d79ab3b625a63993a108751c6c25d/hu/hu_HU/imre/medium/MODEL_CARD). A konkrét adaptert, Piper-konfigurációt és telepített motorforrást helyben ellenőriztük, új generálás vagy paramétermódosítás nélkül.
