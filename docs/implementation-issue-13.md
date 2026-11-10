@@ -28,4 +28,14 @@ A régi tesztalkalmazás és kisebb saját próbafájlok visszaállíthatóan a 
 
 ## Ellenőrzés
 
-A teljes csomag 21 tesztje valódi Piper-integrációval sikeres, 2,466 másodperc alatt. A dokumentált típusellenőrzés sikeres. A fejlesztői alkalmazás fordítása és szigorú aláírásellenőrzése sikeres. A natív fájlválasztás és előnézet után az ablakból indított generálás elkészült; az eredmény 0:15 hosszú MP3-ként, „Leállítva” állapotban jelent meg. Automatikus lejátszás nem indult. A végső két tengelyű kódellenőrzés eredménye még rögzítendő.
+A teljes csomag 21 tesztje valódi Piper-integrációval sikeres, 2,466 másodperc alatt. A dokumentált típusellenőrzés sikeres. A fejlesztői alkalmazás fordítása és szigorú aláírásellenőrzése sikeres. A natív fájlválasztás és előnézet után az ablakból indított generálás elkészült; az eredmény 0:15 hosszú MP3-ként, „Leállítva” állapotban jelent meg. Automatikus lejátszás nem indult. A rövid natív futás 1,023 másodperc alatt 15,128 másodperces, 182 637 byte-os MP3-at készített; a csúcs-RSS 266 731 520 byte. Mind a rövid, mind a hosszú teljes MP3 hibamentesen dekódolható.
+
+## Standards
+
+A `73fccdd...095bdd4` diff külön Standards-reviewja 0 dokumentált szabálysértést és 0 javítandó baseline kódszagot talált. A kizárólagos Piper-adapter és a közös feladatszolgáltatás felelőssége elkülönül, a takarítási kivételek pontosan megnevezettek.
+
+## Spec
+
+A külön Spec-review 0 igazolt kódhibát talált az aktív #13-folyamatban. A rögzített eredeti Piper, a normál tempó, a helyi futás, a saját lejátszó és a biztonságos kimenet megfelel az új felhasználói döntésnek. A hosszú hang emberi átvétele és a fennmaradó pontos törlési lista külön lezárandó; az ASR-tartalmi eltérés nincs sikernek minősítve.
+
+Összesítés: Standards 0, Spec 0 fennmaradó kódhiba. A #13 nyitva marad a hosszú hang visszajelzéséig és a fennmaradó takarítás lezárásáig. Az elvetett #9/#10 VibeVoice-feladatok not_planned állapottal lezárva, a #11/#12 és a további feladatok Piperre és az új függőségekre igazítva.
