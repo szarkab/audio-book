@@ -11,6 +11,7 @@ import unicodedata
 import wave
 
 from .text import speech_parts
+from .settings import NarrationSettings
 from .audio import append_speech_part
 from typing import Callable
 
@@ -35,7 +36,7 @@ class GenerationResult:
     peak_temporary_audio_bytes: int
 
 
-SpeechRenderer = Callable[[str, Path, Callable[[str], None]], None]
+SpeechRenderer = Callable[[str, Path, Callable[[str], None], NarrationSettings], None]
 
 
 class GenerationError(Exception):
@@ -68,9 +69,10 @@ class GenerationService:
     def generate(
         self, source: Path, output: Path, *, notify: Callable[[JobEvent], None] = lambda event: None,
         expected_digest: str | None = None, speed: float = 1.0,
+        settings: NarrationSettings = NarrationSettings(),
     ) -> GenerationResult:
         try:
-            return self._generate(source, output, notify=notify, expected_digest=expected_digest, speed=speed)
+            return self._generate(source, output, notify=notify, expected_digest=expected_digest, speed=speed, settings=settings)
         except GenerationError:
             notify(JobEvent("failed"))
             raise
@@ -83,10 +85,14 @@ class GenerationService:
 
     def _generate(
         self, source: Path, output: Path, *, notify: Callable[[JobEvent], None],
-        expected_digest: str | None, speed: float,
+        expected_digest: str | None, speed: float, settings: NarrationSettings,
     ) -> GenerationResult:
         if not math.isfinite(speed) or not 0.75 <= speed <= 1.5:
             raise GenerationError("A felolvasási tempó 0,75 és 1,5 közé állítható.")
+        try:
+            settings.validate()
+        except ValueError as error:
+            raise GenerationError(str(error)) from error
         preview = self.preview(source)
         if expected_digest is not None and expected_digest != preview.digest:
             raise GenerationError("A forrásszöveg megváltozott az előnézet óta. Válaszd ki újra a fájlt.")
@@ -102,8 +108,10 @@ class GenerationService:
             peak_temporary = 0
             with pcm.open("wb") as assembled:
                 for part in speech_parts(preview.text):
-                    self.speech_renderer(part, wav, lambda state: notify(JobEvent(state, completed, total)))
-                    append_speech_part(wav, assembled)
+                    self.speech_renderer(part, wav, lambda state: notify(JobEvent(state, completed, total)), settings)
+                    if completed and settings.sentence_silence:
+                        assembled.write(bytes(round(settings.sentence_silence * 24000) * 2))
+                    append_speech_part(wav, assembled, normalize_audio=settings.normalize_audio, volume=settings.volume)
                     peak_temporary = max(peak_temporary, assembled.tell() + wav.stat().st_size)
                     wav.unlink()
                     completed += len(part)

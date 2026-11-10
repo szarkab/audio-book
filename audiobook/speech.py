@@ -6,6 +6,8 @@ import subprocess
 from typing import Any, Callable
 import wave
 
+from .settings import NarrationSettings
+
 
 MODEL_REVISION = "cf910fb59f1d79ab3b625a63993a108751c6c25d"
 MODEL_FILES = {
@@ -19,7 +21,7 @@ class PiperSpeechRenderer:
         self.model_path = model_path
         self._voice: Any = None
 
-    def __call__(self, text: str, destination: Path, notify: Callable[[str], None]) -> None:
+    def __call__(self, text: str, destination: Path, notify: Callable[[str], None], settings: NarrationSettings) -> None:
         from .generation import GenerationError
 
         if self._voice is None:
@@ -36,10 +38,23 @@ class PiperSpeechRenderer:
             notify("loading_model")
             self._voice = PiperVoice.load(self.model_path / "hu_HU-imre-medium.onnx", use_cuda=False)
         notify("generating")
+        from piper.config import SynthesisConfig
+
+        synthesis = SynthesisConfig(length_scale=settings.length_scale, noise_scale=settings.noise_scale,
+                                    noise_w_scale=settings.noise_w_scale, normalize_audio=settings.normalize_audio)
         native = destination.with_suffix(".native.wav")
         try:
             with wave.open(str(native), "wb") as audio:
-                self._voice.synthesize_wav(text, audio)
+                rate = self._voice.config.sample_rate
+                audio.setnchannels(1)
+                audio.setsampwidth(2)
+                audio.setframerate(rate)
+                first = True
+                for chunk in self._voice.synthesize(text, syn_config=synthesis):
+                    if not first and settings.sentence_silence:
+                        audio.writeframes(bytes(round(settings.sentence_silence * rate) * 2))
+                    audio.writeframes(chunk.audio_int16_bytes)
+                    first = False
             # Piper's original 22,050 Hz PCM is resampled without changing tempo
             # for the application's existing 24 kHz lossless assembly path.
             subprocess.run([

@@ -12,6 +12,7 @@ import unittest
 import numpy as np
 
 from audiobook.generation import GenerationService
+from audiobook.settings import NarrationSettings
 
 
 @unittest.skipUnless(os.environ.get("AUDIOBOOK_REAL_PIPER_TEST") == "1", "Requires the local Piper Imre model")
@@ -29,6 +30,22 @@ class PiperIntegration(unittest.TestCase):
             self.assertAlmostEqual(len(decoded) / 24000, result.audio_seconds, delta=0.05)
             self.assertGreater(result.audio_seconds, 8)
             self.assertLess(result.audio_seconds, 45)
+
+    def test_extra_sentence_pause_covers_internal_and_part_boundaries(self):
+        import onnxruntime
+        text = "Júlia belépett. A kertben csend volt. Péter elindult. A nap kisütött."
+        durations = []
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / "mondatok.txt"
+            source.write_text(text)
+            for index, silence in enumerate([0.0, 0.25]):
+                onnxruntime.set_seed(42)
+                result = GenerationService().generate(
+                    source, Path(folder) / f"{index}.mp3",
+                    settings=NarrationSettings(sentence_silence=silence),
+                )
+                durations.append(result.audio_seconds)
+        self.assertAlmostEqual(durations[1] - durations[0], 0.75, delta=0.02)
 
 
 if __name__ == "__main__":

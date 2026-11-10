@@ -24,7 +24,7 @@ class LongGenerationTests(unittest.TestCase):
         ) * 20
         self.source.write_text(text, encoding="utf-8")
         spoken = []
-        def bounded_speech(part, destination, notify):
+        def bounded_speech(part, destination, notify, settings=None):
             if len(part) > 600:
                 raise RuntimeError("The external speech model accepts bounded inputs")
             spoken.append(part)
@@ -71,7 +71,7 @@ class LongGenerationTests(unittest.TestCase):
                     prefix = "A " + "a" * offset + ". "
                     self.source.write_text(prefix + sentence + " A történet folytatódott.")
                     spoken = []
-                    def capture(part, destination, notify):
+                    def capture(part, destination, notify, settings=None):
                         spoken.append(part)
                         reference_speech(part, destination, notify)
                     output = self.root / f"próba-{number}-{offset}.mp3"
@@ -83,7 +83,7 @@ class LongGenerationTests(unittest.TestCase):
         text = ("Ez egy önálló bekezdés amelynek nincs lezáró írásjele " * 4 + "\n\n") * 12
         self.source.write_text(text, encoding="utf-8")
         spoken = []
-        def bounded_speech(part, destination, notify):
+        def bounded_speech(part, destination, notify, settings=None):
             if len(part) > 600:
                 raise RuntimeError("The external speech model accepts bounded inputs")
             spoken.append(part)
@@ -95,7 +95,7 @@ class LongGenerationTests(unittest.TestCase):
     def test_an_empty_later_audio_part_cannot_become_a_successful_partial_book(self):
         text = "Első " + "szó " * 80 + "vége. " + "Második " + "szó " * 80 + "vége."
         self.source.write_text(text, encoding="utf-8")
-        def incomplete_speech(part, destination, notify):
+        def incomplete_speech(part, destination, notify, settings=None):
             if part.startswith("Első"):
                 reference_speech(part, destination, notify)
             else:
@@ -119,7 +119,7 @@ class LongGenerationTests(unittest.TestCase):
 
     def test_truncated_audio_part_is_not_accepted_as_a_complete_book(self):
         self.source.write_text("Júlia tovább olvasott.", encoding="utf-8")
-        def truncated_speech(part, destination, notify):
+        def truncated_speech(part, destination, notify, settings=None):
             reference_speech(part, destination, notify)
             with destination.open("r+b") as audio:
                 audio.truncate(destination.stat().st_size - 100)
@@ -133,7 +133,7 @@ class LongGenerationTests(unittest.TestCase):
         text = "A " + "a" * 341 + ". " + sentence
         self.source.write_text(text, encoding="utf-8")
         spoken = []
-        def capture(part, destination, notify):
+        def capture(part, destination, notify, settings=None):
             spoken.append(part)
             reference_speech(part, destination, notify)
         GenerationService(speech_renderer=capture).generate(self.source, self.root / "cím.mp3")
@@ -152,7 +152,7 @@ class LongGenerationTests(unittest.TestCase):
                 text = "A " + "a" * length + ". " + sentence
                 self.source.write_text(text, encoding="utf-8")
                 spoken = []
-                def capture(part, destination, notify):
+                def capture(part, destination, notify, settings=None):
                     spoken.append(part)
                     reference_speech(part, destination, notify)
                 GenerationService(speech_renderer=capture).generate(self.source, self.root / f"rövidítés-{index}.mp3")
@@ -168,7 +168,7 @@ class LongGenerationTests(unittest.TestCase):
         text = " ".join(sentences)
         self.source.write_text(text, encoding="utf-8")
         spoken = []
-        def capture(part, destination, notify):
+        def capture(part, destination, notify, settings=None):
             spoken.append(part)
             reference_speech(part, destination, notify)
         GenerationService(speech_renderer=capture).generate(self.source, self.root / "két-mondat.mp3")
@@ -181,7 +181,7 @@ class LongGenerationTests(unittest.TestCase):
         text = " ".join(sentences)
         self.source.write_text(text, encoding="utf-8")
         spoken = []
-        def capture(part, destination, notify):
+        def capture(part, destination, notify, settings=None):
             spoken.append(part)
             reference_speech(part, destination, notify)
         GenerationService(speech_renderer=capture).generate(self.source, self.root / "számok.mp3")
@@ -195,7 +195,7 @@ class LongGenerationTests(unittest.TestCase):
 
     def test_quiet_and_loud_model_parts_are_assembled_at_a_consistent_level(self):
         self.source.write_text("Júlia kilépett. A kertben csend volt. Péter olvasott. A nap kisütött.", encoding="utf-8")
-        def varying_volume(part, destination, notify):
+        def varying_volume(part, destination, notify, settings=None):
             reference_speech(part, destination, notify)
             with wave.open(str(destination), "rb") as audio:
                 params = audio.getparams()

@@ -10,6 +10,7 @@ import time
 import traceback
 
 from .generation import GenerationError, GenerationService, JobEvent
+from .settings import NarrationSettings
 
 
 MESSAGES = {
@@ -27,6 +28,12 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--expected-digest")
     parser.add_argument("--speed", type=float, default=1.0)
+    parser.add_argument("--length-scale", type=float, default=1.0)
+    parser.add_argument("--noise-scale", type=float, default=0.5)
+    parser.add_argument("--noise-w-scale", type=float, default=0.333)
+    parser.add_argument("--volume", type=float, default=1.0)
+    parser.add_argument("--normalize-audio", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--sentence-silence", type=float, default=0.0)
     args = parser.parse_args()
     protocol = sys.stdout
 
@@ -46,10 +53,14 @@ def main() -> int:
         else:
             if args.output is None:
                 raise GenerationError("Válaszd ki az MP3 mentési helyét.")
+            settings = NarrationSettings(length_scale=args.length_scale, noise_scale=args.noise_scale,
+                                         noise_w_scale=args.noise_w_scale, volume=args.volume,
+                                         normalize_audio=args.normalize_audio, sentence_silence=args.sentence_silence)
+            print("NARRATION_SETTINGS " + json.dumps(asdict(settings)), file=sys.stderr, flush=True)
             with redirect_stdout(sys.stderr):
                 result = service.generate(args.source, args.output, notify=progress,
                                           expected_digest=args.expected_digest,
-                                          speed=args.speed)
+                                          speed=args.speed, settings=settings)
             peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
             metrics = {
                 "audio_seconds": result.audio_seconds,

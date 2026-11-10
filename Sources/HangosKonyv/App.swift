@@ -13,6 +13,7 @@ final class GenerationModel: ObservableObject {
     @Published var progress: Double?
     @Published var status = "Válassz egy magyar TXT-fájlt."
     @Published var error: String?
+    @Published var settings = NarrationSettings()
     let playback = AudioPlayback()
     private let backend = Backend()
 
@@ -61,12 +62,13 @@ final class GenerationModel: ObservableObject {
         busy = true
         status = "A felolvasás indítása…"
         let expectedDigest = digest
+        let jobSettings = settings
         Task {
             defer { busy = false }
             do {
                 try await backend.run(arguments: [
                     "generate", source.path, "--output", target.path, "--expected-digest", expectedDigest
-                ]) { [self] event in
+                ] + jobSettings.workerArguments) { [self] event in
                     if let message = event.message { status = message }
                     if let completed = event.completedCharacters, let total = event.totalCharacters, total > 0 {
                         progress = min(1, max(0, Double(completed) / Double(total)))
@@ -108,6 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 struct ContentView: View {
     @ObservedObject var model: GenerationModel
+    @State private var showingSettings = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -127,6 +130,13 @@ struct ContentView: View {
                     .accessibilityIdentifier("selectSource")
                 Text(model.source?.lastPathComponent ?? "Nincs kiválasztott fájl")
                     .foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                Spacer()
+            }
+            HStack {
+                Button("Felolvasás beállításai…", systemImage: "slider.horizontal.3") { showingSettings = true }
+                    .disabled(model.busy).accessibilityIdentifier("narrationSettings")
+                Text(model.settings == NarrationSettings() ? "Elfogadott alapértékek" : "Egyéni beállítások")
+                    .font(.caption).foregroundStyle(.secondary)
                 Spacer()
             }
             HStack {
@@ -168,11 +178,14 @@ struct ContentView: View {
                     .disabled(model.source == nil || model.busy)
                     .accessibilityIdentifier("generate")
             }
-            Text("Piper Imre · Magyar férfihang · Eredeti tempó · MP3")
+            Text("Piper Imre · Magyar férfihang · MP3")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(28)
-        .frame(minWidth: 760, minHeight: 680)
+        .frame(minWidth: 760, minHeight: 720)
+        .sheet(isPresented: $showingSettings) {
+            NarrationSettingsView(settings: $model.settings, busy: model.busy)
+        }
     }
 }
 
@@ -183,7 +196,7 @@ struct HangosKonyvApp: App {
         WindowGroup {
             ContentView(model: GenerationModel.shared)
         }
-        .defaultSize(width: 900, height: 740)
+        .defaultSize(width: 900, height: 790)
         .commands {
             CommandGroup(replacing: .newItem) { }
         }

@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 import math
 from pathlib import Path
 import struct
@@ -6,11 +7,13 @@ import subprocess
 import tempfile
 import unittest
 import wave
+import numpy as np
 
 from audiobook.generation import GenerationError, GenerationService
+from audiobook.settings import NarrationSettings
 
 
-def reference_speech(text, destination, notify):
+def reference_speech(text, destination, notify, settings=None):
     """Replace only the external speech model; encode a real waveform."""
     notify("generating")
     with wave.open(str(destination), "wb") as stream:
@@ -46,6 +49,49 @@ class GenerationTests(unittest.TestCase):
         self.assertGreater(float(info["format"]["duration"]), 0.2)
         self.assertEqual(events[-1].state, "completed")
         self.assertEqual(list(self.root.glob("*.mp3")), [result.output])
+
+    def test_the_selected_narration_settings_reach_every_speech_part(self):
+        self.source.write_text("Júlia belépett. A kertben csend volt. Péter tovább olvasott.")
+        selected = NarrationSettings(length_scale=1.2, noise_scale=0.3, noise_w_scale=0.2,
+                                     volume=0.7, normalize_audio=False, sentence_silence=0.15)
+        received = []
+        def capture(text, destination, notify, settings):
+            received.append(settings)
+            reference_speech(text, destination, notify)
+        result = GenerationService(speech_renderer=capture).generate(
+            self.source, self.root / "egyéni.mp3", settings=selected,
+        )
+        self.assertGreater(len(received), 1)
+        self.assertTrue(all(settings == selected for settings in received))
+        self.assertTrue(result.output.is_file())
+
+    def test_invalid_narration_values_fail_before_synthesis(self):
+        cases = [dict(length_scale=0), dict(noise_scale=-0.1), dict(noise_w_scale=2),
+                 dict(volume=float("nan")), dict(sentence_silence=-1), dict(normalize_audio="yes")]
+        for index, changes in enumerate(cases):
+            with self.subTest(changes=changes):
+                output = self.root / f"érvénytelen-{index}.mp3"
+                events = []
+                with self.assertRaises(GenerationError):
+                    self.service.generate(self.source, output, settings=replace(NarrationSettings(), **changes),
+                                          notify=events.append)
+                self.assertFalse(output.exists())
+                self.assertEqual(events[-1].state, "failed")
+
+    def test_output_volume_survives_normalization_and_the_toggle_changes_levels(self):
+        levels = {}
+        for name, settings in [
+            ("normal", NarrationSettings()),
+            ("quiet", NarrationSettings(volume=0.5)),
+            ("raw", NarrationSettings(normalize_audio=False)),
+        ]:
+            result = self.service.generate(self.source, self.root / f"{name}.mp3", settings=settings)
+            pcm = np.frombuffer(subprocess.check_output([
+                "ffmpeg", "-v", "error", "-i", str(result.output), "-f", "f32le", "-",
+            ]), dtype="<f4")
+            levels[name] = float(np.sqrt(np.mean(pcm ** 2)))
+        self.assertAlmostEqual(levels["quiet"] / levels["normal"], 0.5, delta=0.03)
+        self.assertLess(levels["raw"], levels["normal"] * 0.95)
 
     def test_invalid_sources_fail_without_creating_an_mp3(self):
         cases = [("üres.txt", b"  \n"), ("sérült.txt", b"\xff\xfe"),
@@ -87,7 +133,7 @@ class GenerationTests(unittest.TestCase):
 
     def test_a_file_created_during_generation_is_not_reported_as_our_result(self):
         output = self.root / "hang.mp3"
-        def concurrent_speech(text, destination, notify):
+        def concurrent_speech(text, destination, notify, settings=None):
             reference_speech(text, destination, notify)
             output.write_bytes(b"another job finished first")
         service = GenerationService(speech_renderer=concurrent_speech)
@@ -96,9 +142,9 @@ class GenerationTests(unittest.TestCase):
         self.assertEqual(output.read_bytes(), b"another job finished first")
 
     def test_save_or_encoding_failure_never_leaves_a_finished_mp3(self):
-        def broken_speech(text, destination, notify):
+        def broken_speech(text, destination, notify, settings=None):
             raise OSError("disk full")
-        def invalid_speech(text, destination, notify):
+        def invalid_speech(text, destination, notify, settings=None):
             destination.write_bytes(b"not audio")
         for renderer in [broken_speech, invalid_speech]:
             with self.subTest(renderer=renderer.__name__):
