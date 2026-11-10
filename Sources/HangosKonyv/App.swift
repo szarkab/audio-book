@@ -15,6 +15,7 @@ final class GenerationModel: ObservableObject {
     @Published var error: String?
     let playback = AudioPlayback()
     private let backend = Backend()
+    var narratorDescription: String { backend.narratorDescription }
 
     func selectSource() {
         let panel = NSOpenPanel()
@@ -65,7 +66,7 @@ final class GenerationModel: ObservableObject {
             defer { busy = false }
             do {
                 try await backend.run(arguments: [
-                    "generate", source.path, "--output", target.path, "--expected-digest", expectedDigest, "--speed", "1.1"
+                    "generate", source.path, "--output", target.path, "--expected-digest", expectedDigest, "--speed", backend.exportSpeed
                 ]) { [self] event in
                     if let message = event.message { status = message }
                     if let completed = event.completedCharacters, let total = event.totalCharacters, total > 0 {
@@ -168,7 +169,7 @@ struct ContentView: View {
                     .disabled(model.source == nil || model.busy)
                     .accessibilityIdentifier("generate")
             }
-            Text("Fejlesztői változat · Férfi narrátor · 1,1× tempó · MP3")
+            Text(model.narratorDescription)
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(28)

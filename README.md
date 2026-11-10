@@ -2,6 +2,17 @@
 
 Magyar TXT-fájlok helyi felolvasása férfi narrátorhanggal, Apple Silicon Macen. A fejlesztői változat magyar UTF-8 TXT-fájlokat alakít egyetlen mono, 96 kbit/s MP3-má, legfeljebb kétmondatos belső feldolgozással és szövegalapú haladásjelzéssel. Az alkalmazás alapértelmezett exporttempója 1,1×; a gyorsítás a kész hangon, hangmagasság-változtatás nélkül történik. A korábbi 600 karakteres korlát megszűnt. A beszédgenerálás a már letöltött OmniVoice-bfloat16 modellt használja MLX-szel, a GPU-n; nincs felhős beszédgenerálás.
 
+## Magyar VibeVoice-próbaváltozat
+
+A további fejlesztés kiválasztott modellje a `Cseti/VibeVoice_7B_hun_v2`. Az M5/32 GB gépen a 4 bites nyelvi modullal és eredeti F32 hangképző komponensekkel előkészített változat rövid magyar TXT-ből helyben készít MP3-at. Az új hang eredeti tempóval, 1,0× exporttal működik; a korábbi OmniVoice-gyorsítást nem örökli. A hosszú VibeVoice-narráció és a sorszámkiejtés külön feladat, a rövid hang emberi elfogadása még nyitott.
+
+```sh
+./scripts/build-dev-app.sh vibevoice
+open artifacts/HangosKonyv-VibeVoice.app
+```
+
+Ez külön fejlesztői alkalmazás, a korábbi `HangosKonyv.app` OmniVoice-változata összehasonlításra megmarad. Nem önálló DMG. Az eredeti modell egyszeri beszerzése és az előkészítő futtatása fejlesztői lépés; a célgépen ez már elkészült. A rögzített verziók, reprodukció, mérések és korlátok a [#10 megvalósítási leírásában](docs/implementation-issue-10.md) találhatók. Új gépen a modellt az ott leírt módon elő kell készíteni.
+
 ## Fejlesztői indítás
 
 Szükséges: Apple Silicon Mac, Xcode vagy Swift 6 eszközök, uv és FFmpeg. A modell beszerzéséhez internet szükséges; generáláskor nincs rá szükség.

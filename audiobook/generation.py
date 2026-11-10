@@ -43,12 +43,20 @@ class GenerationError(Exception):
 
 
 class GenerationService:
-    def __init__(self, speech_renderer: SpeechRenderer | None = None, model_path: Path | None = None):
+    def __init__(self, speech_renderer: SpeechRenderer | None = None, model_path: Path | None = None,
+                 *, engine: str = "omnivoice"):
         from .speech import MlxSpeechRenderer
+        from .vibevoice import VibeVoiceSpeechRenderer
 
-        self.speech_renderer = speech_renderer or MlxSpeechRenderer(
-            model_path or Path(__file__).resolve().parents[1] / ".local/models/OmniVoice-bfloat16"
-        )
+        if engine not in {"omnivoice", "vibevoice"}:
+            raise GenerationError("Ismeretlen helyi beszédmotor.")
+        root = Path(__file__).resolve().parents[1] / ".local/models"
+        if engine == "vibevoice":
+            self.speech_renderer = speech_renderer or VibeVoiceSpeechRenderer(
+                model_path or root / "VibeVoice_7B_hun_v2-mlx-4bit"
+            )
+        else:
+            self.speech_renderer = speech_renderer or MlxSpeechRenderer(model_path or root / "OmniVoice-bfloat16")
 
     def preview(self, source: Path) -> SourcePreview:
         if source.suffix.lower() != ".txt":
