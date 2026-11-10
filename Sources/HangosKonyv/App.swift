@@ -100,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard GenerationModel.shared.busy else { return .terminateNow }
         let alert = NSAlert()
         alert.messageText = "A feladat még folyamatban van."
-        alert.informativeText = "Várd meg a végét. A munka mentése és későbbi folytatása egy következő változatban érkezik."
+        alert.informativeText = "Várd meg, amíg elkészül az MP3, és utána zárd be az alkalmazást."
         alert.runModal()
         return .terminateCancel
     }

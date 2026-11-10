@@ -5,13 +5,13 @@ Magyar szövegekből saját használatra készülő, narrált hanganyagok fogalm
 ## Fogalmak
 
 **Forrásszöveg**:
-A felolvasásra kiválasztott magyar TXT- vagy Markdown-fájl tartalma.
+A felolvasásra kiválasztott magyar TXT-fájl tartalma.
 
 **Narrátorhang**:
-A hanganyagban megszólaló, magyar hangminták alapján kiválasztott hang, nyugodt előadásmóddal.
+A hanganyagban megszólaló, magyar hangminták alapján kiválasztott férfihang, nyugodt előadásmóddal.
 
 **Hanganyag**:
 A forrásszöveg felolvasásából létrejövő, meghallgatható felvétel; teljes könyvet is tartalmazhat.
 
 **Generálási feladat**:
-Egy forrásszöveg hanganyaggá alakítása, amely megszakítható, majd a már elkészült munka megtartásával folytatható.
+Egy kiválasztott forrásszöveg teljes hanganyaggá alakítása, egyetlen MP3-kimenettel.

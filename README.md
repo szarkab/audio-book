@@ -10,7 +10,7 @@ A **Felolvasás beállításai…** gombbal MP3-készítés előtt állítható 
 
 A teljes fájl köztes jóváhagyás nélkül feldolgozódik. A rövid belső egységek veszteségmentes PCM-ben állnak össze a lemezen, majd egyszer készül az MP3. A forrásfájl változatlan marad.
 
-Ez fejlesztői alkalmazás: a projekt Python-környezetét, helyi modelljét és FFmpeg-jét használja. Az önálló DMG, Markdown-beolvasás, megszakítás utáni tartós folytatás és sorszámfinomítás a további feladatokban marad. A logó és arculat a hangteszt után következik.
+Ez fejlesztői alkalmazás: a projekt Python-környezetét, helyi modelljét és FFmpeg-jét használja. A további feladatok a sorszámfinomítás, az alkalmazáson belüli modellbeszerzés, valamint az önálló DMG saját arculattal, színekkel és appikonnal. A végső átvétel a telepített helyi alkalmazásban történik. A felhasználó kérésére az MD-beolvasás és a generálás szüneteltetése/tartós folytatása kikerült a tervből; böngészős felület vagy böngészős próba nem szükséges.
 
 ## Fejlesztői előkészítés
 
