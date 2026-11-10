@@ -7,6 +7,9 @@ import shutil
 import subprocess
 import tempfile
 import unicodedata
+import wave
+
+from .text import speech_parts
 from typing import Callable
 
 
@@ -19,11 +22,15 @@ class SourcePreview:
 @dataclass(frozen=True)
 class JobEvent:
     state: str
+    completed_characters: int = 0
+    total_characters: int = 0
 
 
 @dataclass(frozen=True)
 class GenerationResult:
     output: Path
+    audio_seconds: float
+    peak_temporary_audio_bytes: int
 
 
 SpeechRenderer = Callable[[str, Path, Callable[[str], None]], None]
@@ -45,17 +52,11 @@ class GenerationService:
         if source.suffix.lower() != ".txt":
             raise GenerationError("Ebben a változatban TXT-fájlt válassz.")
         try:
-            with source.open("rb") as stream:
-                data = stream.read(2404)
-            if len(data) > 2403:
-                raise GenerationError("Ez a fejlesztői változat legfeljebb 600 karakteres TXT-fájlt kezel.")
-            text = data.decode("utf-8-sig").strip()
+            text = source.read_text(encoding="utf-8-sig").strip()
         except UnicodeError as error:
             raise GenerationError("A fájl nem érvényes UTF-8 szöveg. Mentsd UTF-8 kódolással.") from error
         except OSError as error:
             raise GenerationError("A szövegfájl nem olvasható. Ellenőrizd a fájlt és a hozzáférést.") from error
-        if len(text) > 600:
-            raise GenerationError("Ez a fejlesztői változat legfeljebb 600 karakteres TXT-fájlt kezel.")
         if not text:
             raise GenerationError("A kiválasztott fájl üres.")
         if any(unicodedata.category(c) == "Cc" and c not in "\n\r\t" for c in text):
@@ -71,7 +72,7 @@ class GenerationService:
         except GenerationError:
             notify(JobEvent("failed"))
             raise
-        except (OSError, subprocess.CalledProcessError) as error:
+        except (OSError, subprocess.CalledProcessError, wave.Error, EOFError) as error:
             notify(JobEvent("failed"))
             raise GenerationError(
                 "Nem sikerült elkészíteni vagy menteni az MP3-at. Ellenőrizd a szabad tárhelyet, "
@@ -87,20 +88,44 @@ class GenerationService:
             raise GenerationError("A forrásszöveg megváltozott az előnézet óta. Válaszd ki újra a fájlt.")
         if output.exists() or output.is_symlink():
             raise GenerationError("A célfájl már létezik. Válassz másik nevet.")
-        notify(JobEvent("preparing"))
+        total = len(preview.text)
+        completed = 0
+        notify(JobEvent("preparing", completed, total))
         with tempfile.TemporaryDirectory(dir=output.parent, prefix=".hangoskonyv-") as folder:
-            wav = Path(folder) / "speech.wav"
+            wav = Path(folder) / "part.wav"
+            pcm = Path(folder) / "speech.pcm"
             encoded = Path(folder) / "speech.mp3"
-            self.speech_renderer(preview.text, wav, lambda state: notify(JobEvent(state)))
-            notify(JobEvent("encoding"))
+            peak_temporary = 0
+            with pcm.open("wb") as assembled:
+                for part in speech_parts(preview.text):
+                    self.speech_renderer(part, wav, lambda state: notify(JobEvent(state, completed, total)))
+                    with wave.open(str(wav), "rb") as audio:
+                        if (audio.getnchannels(), audio.getsampwidth(), audio.getframerate()) != (1, 2, 24000):
+                            raise GenerationError("A beszédmodell nem támogatott hangformátumot adott.")
+                        if audio.getnframes() == 0:
+                            raise GenerationError("A beszédmodell üres hangrészt adott. A hiányos hanganyagot nem mentettük kész MP3-ként.")
+                        expected_bytes = audio.getnframes() * audio.getsampwidth() * audio.getnchannels()
+                        copied_bytes = 0
+                        while frames := audio.readframes(4096):
+                            assembled.write(frames)
+                            copied_bytes += len(frames)
+                        if copied_bytes != expected_bytes:
+                            raise GenerationError("A modell által készített hangrész sérült vagy hiányos. Nem mentettünk csonka MP3-at.")
+                    peak_temporary = max(peak_temporary, assembled.tell() + wav.stat().st_size)
+                    wav.unlink()
+                    completed += len(part)
+                    notify(JobEvent("generating", completed, total))
+            notify(JobEvent("encoding", completed, total))
             subprocess.run([
                 shutil.which("ffmpeg") or "ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error",
-                "-n", "-i", str(wav), "-ac", "1", "-ar", "24000", "-codec:a", "libmp3lame",
+                "-n", "-f", "s16le", "-ar", "24000", "-ac", "1", "-i", str(pcm), "-codec:a", "libmp3lame",
                 "-b:a", "96k", str(encoded),
             ], check=True, capture_output=True)
+            pcm_bytes = pcm.stat().st_size
+            peak_temporary = max(peak_temporary, pcm_bytes + encoded.stat().st_size)
             try:
                 os.link(encoded, output)
             except FileExistsError as error:
                 raise GenerationError("A célfájl már létezik. Válassz másik nevet.") from error
-        notify(JobEvent("completed"))
-        return GenerationResult(output)
+        notify(JobEvent("completed", total, total))
+        return GenerationResult(output, pcm_bytes / 48000, peak_temporary)

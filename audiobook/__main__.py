@@ -5,6 +5,8 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 import sys
+import resource
+import time
 import traceback
 
 from .generation import GenerationError, GenerationService, JobEvent
@@ -32,8 +34,9 @@ def main() -> int:
 
     def progress(event: JobEvent) -> None:
         if event.state not in {"completed", "failed"}:
-            send({"state": event.state, "message": MESSAGES.get(event.state, "Feldolgozás…")})
+            send({**asdict(event), "message": MESSAGES.get(event.state, "Feldolgozás…")})
 
+    started = time.perf_counter()
     try:
         service = GenerationService()
         if args.command == "preview":
@@ -45,7 +48,16 @@ def main() -> int:
             with redirect_stdout(sys.stderr):
                 result = service.generate(args.source, args.output, notify=progress,
                                           expected_digest=args.expected_digest)
-            send({"state": "completed", "output": str(result.output.resolve()), "message": "Elkészült az MP3."})
+            peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            metrics = {
+                "audio_seconds": result.audio_seconds,
+                "elapsed_seconds": time.perf_counter() - started,
+                "peak_process_rss_bytes": peak_rss if sys.platform == "darwin" else peak_rss * 1024,
+                "peak_temporary_audio_bytes": result.peak_temporary_audio_bytes,
+                "mp3_bytes": result.output.stat().st_size,
+            }
+            print("GENERATION_METRICS " + json.dumps(metrics), file=sys.stderr, flush=True)
+            send({"state": "completed", "output": str(result.output.resolve()), "message": "Elkészült az MP3.", **metrics})
         return 0
     except GenerationError as error:
         send({"state": "failed", "message": str(error)})

@@ -6,6 +6,8 @@ struct WorkerEvent: Decodable, Sendable {
     let digest: String?
     let output: String?
     let message: String?
+    let completedCharacters: Int?
+    let totalCharacters: Int?
 }
 
 struct WorkerFailure: LocalizedError {
@@ -56,6 +58,7 @@ struct Backend: Sendable {
             var terminalEvent = false
             var failure: String?
             let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
             while true {
                 let data = pipe.fileHandleForReading.availableData
                 if data.isEmpty { break }

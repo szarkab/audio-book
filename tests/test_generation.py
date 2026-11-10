@@ -107,11 +107,6 @@ class GenerationTests(unittest.TestCase):
             self.service.generate(self.source, self.root / "hang.mp3", expected_digest=preview.digest)
         self.assertFalse((self.root / "hang.mp3").exists())
 
-    def test_unsupported_long_text_is_explained_instead_of_truncated(self):
-        self.source.write_text("á" * 601, encoding="utf-8")
-        with self.assertRaisesRegex(GenerationError, "600"):
-            self.service.generate(self.source, self.root / "hang.mp3")
-        self.assertFalse((self.root / "hang.mp3").exists())
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Hangoskönyv
 
-Magyar TXT-fájlok helyi felolvasása férfi narrátorhanggal, Apple Silicon Macen. A jelenlegi első fejlesztői változat rövid, legfeljebb 600 karakteres UTF-8 TXT-fájlt alakít egyetlen mono, 96 kbit/s MP3-má. A beszédgenerálás a már letöltött OmniVoice-bfloat16 modellt használja MLX-szel, a GPU-n; nincs felhős beszédgenerálás.
+Magyar TXT-fájlok helyi felolvasása férfi narrátorhanggal, Apple Silicon Macen. A fejlesztői változat magyar UTF-8 TXT-fájlokat alakít egyetlen mono, 96 kbit/s MP3-má, automatikus belső feldolgozással és szövegalapú haladásjelzéssel. A korábbi 600 karakteres korlát megszűnt. A beszédgenerálás a már letöltött OmniVoice-bfloat16 modellt használja MLX-szel, a GPU-n; nincs felhős beszédgenerálás.
 
 ## Fejlesztői indítás
 
@@ -20,7 +20,11 @@ open artifacts/HangosKonyv.app
 
 Az így létrejövő alkalmazásablakból választható ki a TXT-fájl, látható az előnézet, elindítható a generálás, és megnyitható a kész MP3. Meglévő célfájlt nem ír felül; új nevet kell választani. Ha az előnézet óta megváltozott a forrásszöveg, az alkalmazás új kiválasztást kér.
 
-Ez fejlesztői alkalmazáscsomag: az aktuális forrásmappát, annak Python-környezetét, modelljét és a helyi FFmpeg-et használja. Nem önálló telepítő és nem a későbbi DMG. A hosszú fájlok, Markdown, megszakítás utáni folytatás, első modellletöltés és önálló csomagolás külön feladatok.
+A teljes kiválasztott szöveg automatikusan végigfut; belső részeket nem kell jóváhagyni és nincs külön részexport. A mondatok és önálló bekezdések határain dolgozik. A férfihangot az elfogadott szintetikus mintából rögzített hangreferencia tartja állandó kiindulóponton, amelyet a modell egyszer kódol egy feladathoz. A hosszú narráció tényleges minőségét meghallgatással kell elfogadni.
+
+A teljes hanganyag nem kerül egyszerre RAM-ba: a modell egy szövegrész hangját tartja memóriában, a hangrészek folyamatosan lemezre kerülnek, és egyszer, a végén készül el az MP3. Az átmeneti tárhely a hanghosszal nő, a teljes modell kontextusához szükséges memória a legnagyobb feldolgozott mondat méretétől is függ. Egyetlen rendkívül hosszú, mondat- és bekezdéshatár nélküli szöveg továbbra is elérheti a modell erőforráskorlátait; a rendszer nem csonkolja észrevétlenül.
+
+Ez fejlesztői alkalmazáscsomag: az aktuális forrásmappát, annak Python-környezetét, modelljét és a helyi FFmpeg-et használja. Nem önálló telepítő és nem a későbbi DMG. A Markdown, megszakítás utáni folytatás, első modellletöltés és önálló csomagolás külön feladatok. A hosszú fájlok többperces minőségi átvétele folyamatban van.
 
 Generálás közben a normál kilépés figyelmeztetést ad, mert ez a változat még nem képes folytatni a megszakadt munkát. A kényszerített bezárás nem támogatott munkamenet. A helyi futtatónaplók a `.local/logs` mappába kerülnek; nem kerülnek Gitbe.
 

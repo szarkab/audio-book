@@ -1,7 +1,9 @@
 """Offline MLX adapter for the approved male narrator."""
 import os
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
+import hashlib
+import json
 
 
 REFERENCE_TEXT = (
@@ -14,6 +16,8 @@ REFERENCE_TEXT = (
 class MlxSpeechRenderer:
     def __init__(self, model_path: Path):
         self.model_path = model_path
+        self._model: Any = None
+        self._reference_tokens: Any = None
 
     def __call__(self, text: str, destination: Path, notify: Callable[[str], None]) -> None:
         from .generation import GenerationError
@@ -30,12 +34,28 @@ class MlxSpeechRenderer:
         from mlx_audio.audio_io import write as audio_write
         from mlx_audio.tts.models.omnivoice.duration import RuleDurationEstimator
         from mlx_audio.tts.utils import load_model
+        from mlx_audio.tts.models.omnivoice.utils import create_voice_clone_prompt
 
         if not mx.metal.is_available():
             raise GenerationError("Az Apple GPU nem érhető el. Indítsd újra az alkalmazást a Macen.")
         mx.set_default_device(mx.gpu)
-        notify("loading_model")
-        model = load_model(str(self.model_path))
+        if self._model is None:
+            notify("loading_model")
+            reference = Path(__file__).resolve().parents[1] / "assets/voices/male-reference.wav"
+            metadata = reference.with_suffix(".json")
+            if not reference.is_file() or not metadata.is_file():
+                raise GenerationError("Hiányzik a rögzített férfi hangreferencia. Ellenőrizd az alkalmazásfájlokat.")
+            expected = json.loads(metadata.read_text())["reference_wav_sha256"]
+            if hashlib.sha256(reference.read_bytes()).hexdigest() != expected:
+                raise GenerationError("A férfi hangreferencia sérült. Állítsd vissza az eredeti alkalmazásfájlokat.")
+            model = load_model(str(self.model_path))
+            reference_tokens = create_voice_clone_prompt(
+                str(reference), tokenizer=model.audio_tokenizer, max_duration_s=10.0,
+            )
+            mx.eval(reference_tokens)
+            self._model = model
+            self._reference_tokens = reference_tokens
+        model = self._model
         duration = max(3.0, RuleDurationEstimator().estimate_duration(
             text, REFERENCE_TEXT, 23.0, low_threshold=None,
         ))
@@ -43,7 +63,7 @@ class MlxSpeechRenderer:
         notify("generating")
         result = next(model.generate(
             text=text, language="hu", instruct="male, middle-aged, low pitch",
-            duration_s=duration, num_steps=64,
+            duration_s=duration, num_steps=64, ref_tokens=self._reference_tokens,
         ))
         mx.eval(result.audio)
         audio = np.asarray(result.audio, dtype=np.float32).reshape(-1)
@@ -52,3 +72,5 @@ class MlxSpeechRenderer:
         peak = float(np.abs(audio).max())
         audio = audio * min(1.0, 0.95 / peak)
         audio_write(str(destination), audio, result.sample_rate)
+        del result, audio
+        mx.clear_cache()

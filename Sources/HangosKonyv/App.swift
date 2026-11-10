@@ -10,6 +10,7 @@ final class GenerationModel: ObservableObject {
     @Published var digest = ""
     @Published var output: URL?
     @Published var busy = false
+    @Published var progress: Double?
     @Published var status = "Válassz egy magyar TXT-fájlt."
     @Published var error: String?
     private let backend = Backend()
@@ -25,6 +26,7 @@ final class GenerationModel: ObservableObject {
         digest = ""
         output = nil
         error = nil
+        progress = nil
         busy = true
         status = "A szöveg betöltése…"
         Task {
@@ -52,6 +54,7 @@ final class GenerationModel: ObservableObject {
         guard panel.runModal() == .OK, let target = panel.url else { return }
         error = nil
         output = nil
+        progress = nil
         busy = true
         status = "A felolvasás indítása…"
         let expectedDigest = digest
@@ -62,6 +65,9 @@ final class GenerationModel: ObservableObject {
                     "generate", source.path, "--output", target.path, "--expected-digest", expectedDigest
                 ]) { [self] event in
                     if let message = event.message { status = message }
+                    if let completed = event.completedCharacters, let total = event.totalCharacters, total > 0 {
+                        progress = min(1, max(0, Double(completed) / Double(total)))
+                    }
                     if event.state == "completed", let path = event.output {
                         output = URL(fileURLWithPath: path)
                     }
@@ -121,7 +127,7 @@ struct ContentView: View {
             HStack {
                 Text("Felolvasandó szöveg").font(.headline)
                 Spacer()
-                Text("\(model.preview.count) / 600 karakter").font(.caption).foregroundStyle(.secondary)
+                Text("\(model.preview.count.formatted()) karakter").font(.caption).foregroundStyle(.secondary)
             }
             ScrollView {
                 Text(model.preview.isEmpty ? "A kiválasztott szöveg itt jelenik meg." : model.preview)
@@ -137,6 +143,13 @@ struct ContentView: View {
                 Label(error, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red).textSelection(.enabled)
             }
+            if model.busy, let progress = model.progress {
+                VStack(alignment: .leading, spacing: 5) {
+                    ProgressView(value: progress)
+                    Text("Feldolgozott szöveg: \(Int(progress * 100))%")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
             HStack(spacing: 12) {
                 if model.busy { ProgressView().controlSize(.small) }
                 Text(model.status).foregroundStyle(.secondary)
@@ -150,7 +163,7 @@ struct ContentView: View {
                     .disabled(model.source == nil || model.busy)
                     .accessibilityIdentifier("generate")
             }
-            Text("Első fejlesztői változat · Rövid, UTF-8 kódolású TXT · Férfi narrátor · MP3")
+            Text("Fejlesztői változat · UTF-8 kódolású TXT · Férfi narrátor · MP3")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(28)
