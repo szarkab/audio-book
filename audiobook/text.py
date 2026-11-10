@@ -4,7 +4,7 @@ import re
 
 
 _ABBREVIATIONS = {
-    "dr", "prof", "ifj", "id", "pl", "stb", "kb", "ún", "ill", "vö",
+    "dr", "prof", "ifj", "id", "pl", "stb", "kb", "ún", "ill", "vö", "sz",
     "jan", "febr", "márc", "ápr", "jún", "júl", "aug", "szept", "okt", "nov", "dec",
 }
 _BOUNDARY = re.compile(r'[.!?…]+[”»"\')\]]*(?:\s+|$)|\n[ \t]*\n+')

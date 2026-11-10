@@ -127,6 +127,18 @@ class LongGenerationTests(unittest.TestCase):
             GenerationService(speech_renderer=truncated_speech).generate(self.source, output)
         self.assertFalse(output.exists())
 
+    def test_address_number_abbreviation_does_not_split_a_sentence(self):
+        sentence = "A találkozót a Kossuth utca 12. sz. alatt tartották meg."
+        text = "A " + "a" * 341 + ". " + sentence
+        self.source.write_text(text, encoding="utf-8")
+        spoken = []
+        def capture(part, destination, notify):
+            spoken.append(part)
+            reference_speech(part, destination, notify)
+        GenerationService(speech_renderer=capture).generate(self.source, self.root / "cím.mp3")
+        self.assertTrue(any(sentence in part for part in spoken), spoken)
+        self.assertEqual("".join(spoken), text)
+
 
 if __name__ == "__main__":
     unittest.main()
