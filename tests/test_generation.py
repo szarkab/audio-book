@@ -50,6 +50,48 @@ class GenerationTests(unittest.TestCase):
         self.assertEqual(events[-1].state, "completed")
         self.assertEqual(list(self.root.glob("*.mp3")), [result.output])
 
+    def test_clear_ordinals_in_preview_are_exactly_the_spoken_text(self):
+        original = "1. fejezet. 2. próba. A 15. versenyző és a 21. hely. A 100. alkalom."
+        expected = "első fejezet. második próba. A tizenötödik versenyző és a huszonegyedik hely. A századik alkalom."
+        self.source.write_text(original)
+        received = []
+        def capture(text, destination, notify, settings):
+            received.append(text)
+            reference_speech(text, destination, notify)
+        service = GenerationService(speech_renderer=capture)
+        preview = service.preview(self.source)
+        self.assertEqual(preview.text, expected)
+        result = service.generate(self.source, self.root / "sorszámok.mp3", expected_digest=preview.digest)
+        self.assertEqual("".join(received), expected)
+        self.assertEqual(self.source.read_text(), original)
+        self.assertTrue(result.output.is_file())
+
+    def test_even_a_source_change_with_identical_spoken_text_requires_new_preview(self):
+        self.source.write_text("1. fejezet")
+        preview = self.service.preview(self.source)
+        self.source.write_text(" 1. fejezet\n")
+        self.assertEqual(self.service.preview(self.source).text, preview.text)
+        output = self.root / "megváltozott.mp3"
+        with self.assertRaisesRegex(GenerationError, "megváltozott"):
+            self.service.generate(self.source, output, expected_digest=preview.digest)
+        self.assertFalse(output.exists())
+
+    def test_ambiguous_dotted_numbers_are_preserved_in_preview_and_audio(self):
+        original = ("2026. 11. 10. fejezet: keltezési példa. 2026. november 10. "
+                    "Dr. Kovács a Fő utca 12. sz. alatt lakik. Verzió: v1.2.3. "
+                    "A 1.2. fejezet verziócímke. Érték: 3,14 és 1.5. "
+                    "A darabszám 1. Ez egy mondat. A 101. fejezet. 01. fejezet.")
+        self.source.write_text(original)
+        received = []
+        def capture(text, destination, notify, settings):
+            received.append(text)
+            reference_speech(text, destination, notify)
+        service = GenerationService(speech_renderer=capture)
+        preview = service.preview(self.source)
+        self.assertEqual(preview.text, original)
+        service.generate(self.source, self.root / "kivételek.mp3", expected_digest=preview.digest)
+        self.assertEqual("".join(received), original)
+
     def test_the_selected_narration_settings_reach_every_speech_part(self):
         self.source.write_text("Júlia belépett. A kertben csend volt. Péter tovább olvasott.")
         selected = NarrationSettings(length_scale=1.2, noise_scale=0.3, noise_w_scale=0.2,

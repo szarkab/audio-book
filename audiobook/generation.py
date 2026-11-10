@@ -10,7 +10,7 @@ import tempfile
 import unicodedata
 import wave
 
-from .text import speech_parts
+from .text import prepare_narration, speech_parts
 from .settings import NarrationSettings
 from .audio import append_speech_part
 from typing import Callable
@@ -55,7 +55,8 @@ class GenerationService:
         if source.suffix.lower() != ".txt":
             raise GenerationError("Ebben a változatban TXT-fájlt válassz.")
         try:
-            text = source.read_text(encoding="utf-8-sig").strip()
+            original = source.read_bytes()
+            text = original.decode("utf-8-sig").strip()
         except UnicodeError as error:
             raise GenerationError("A fájl nem érvényes UTF-8 szöveg. Mentsd UTF-8 kódolással.") from error
         except OSError as error:
@@ -64,7 +65,7 @@ class GenerationService:
             raise GenerationError("A kiválasztott fájl üres.")
         if any(unicodedata.category(c) == "Cc" and c not in "\n\r\t" for c in text):
             raise GenerationError("A fájl szöveg helyett bináris vezérlőjeleket tartalmaz.")
-        return SourcePreview(text, hashlib.sha256(text.encode("utf-8")).hexdigest())
+        return SourcePreview(prepare_narration(text), hashlib.sha256(original).hexdigest())
 
     def generate(
         self, source: Path, output: Path, *, notify: Callable[[JobEvent], None] = lambda event: None,
