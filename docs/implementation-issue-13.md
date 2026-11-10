@@ -39,3 +39,12 @@ A `73fccdd...095bdd4` diff külön Standards-reviewja 0 dokumentált szabálysé
 A külön Spec-review 0 igazolt kódhibát talált az aktív #13-folyamatban. A rögzített eredeti Piper, a normál tempó, a helyi futás, a saját lejátszó és a biztonságos kimenet megfelel az új felhasználói döntésnek. A hosszú hang emberi átvétele és a fennmaradó pontos törlési lista külön lezárandó; az ASR-tartalmi eltérés nincs sikernek minősítve.
 
 Összesítés: Standards 0, Spec 0 fennmaradó kódhiba. A takarítás lezárva; a #13 a hosszú hang visszajelzéséig marad nyitva. Az elvetett #9/#10 VibeVoice-feladatok not_planned állapottal lezárva, a #11/#12 és a további feladatok Piperre és az új függőségekre igazítva.
+
+
+## Felhasználói visszajelzés és szünetpróba
+
+A nagyobb Piper-teszt a felhasználó szerint nagyon biztató és gyors, a hangminőség az eddigi legjobb. Ugyanakkor kapkodónak érzi, rövid vesszőszünetekkel és hibás hangsúlyokkal. Ez további természetességi finomítás, nem végleges hosszúanyag-átvétel.
+
+A rögzített Imre-modell a Piper 1.8.0 hivatalos, memóriában hozzáadott fonéma-időzítési kimenetét támogatja. A modellfájl súlyai nem változnak. Három vesszőnél a próba 69,66 / 81,27 / 116,10 ms időzítést adott. Egy elkülönített hangpróba ezeket 180 ms-os jelölt szünetre egészítette ki, és a mondatvégi modellfarokkal együtt legalább 350 ms helyet hagyott. A beszúrás a jelölt vesszőszakasz legcsendesebb 10 ms-os ablaka közepén történik, tisztán beszélt régiót nem vágunk szét. A szünetes változat minden eredeti nem nulla PCM-mintát változatlan sorrendben megtartott; csak csend került közéjük. Ez nem bizonyítja, hogy a bevágás teljesen hallhatatlan; a meghallgatás a döntő.
+
+Az eredeti összehasonlítás 11,32 s, a szünetes minta 11,84 s, az ugyanezzel és 1,08-as Piper length_scale beállítással készített enyhén lassított minta 12,31 s. A szöveg és a hangprofil közös. A kísérleti minták az `artifacts/piper-prosody` alatt vannak. Az alkalmazás kódja és alapbeállítása változatlan; a felhasználó visszajelzése után választható végleges irány. Az ideiglenes WAV-ok eltávolítva, az MP3-minták és kis mérési jegyzék maradtak. A próbához átmenetileg szükséges ONNX-szerkesztő csomagok kikerültek az aktív környezetből.
