@@ -52,11 +52,21 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 AUDIOBOOK_REAL_VIBEVOICE_TEST=1 \
 
 A valódi modellregresszió a teljes generálási szolgáltatást használja, majd helyi ASR-rel ellenőrzi a forrástartalmat. A korábbi OmniVoice-próba külön továbbra is az `AUDIOBOOK_REAL_MODEL_TEST=1` kapcsolóval futtatható; az új kapcsoló a kiválasztott VibeVoice-változatot ellenőrzi.
 
-A félbehagyott, saját sorszám-/1,15× finomítások külön mentése a `/private/tmp/audio-book-ordinal-deferred` könyvtárban maradt a #12 számára. Nem kerültek a #10-be; a VibeVoice-ra a gyorsítás nem örökölhető.
+A félbehagyott, saját sorszám-/1,15× finomítások külön mentése a `.local/deferred/ordinal-before-vibevoice` könyvtárban maradt a #12 számára. Nem kerültek a #10-be; a VibeVoice-ra a gyorsítás nem örökölhető.
 
 ## Záró ellenőrzés és review
 
-A célzott teljesfolyamat-tesztek és típusellenőrzés, a Swift-fordítás és a külön alkalmazás aláírásellenőrzése sikeres. A végső teljes tesztfutás és két tengelyű code-review eredménye a lezáró körben rögzítendő. A helyi férfiminta emberi elfogadása nyitott.
+A végső teljes csomag mind a 22 tesztje sikeres, a valódi VibeVoice-modellregresszióval és helyi ASR-rel, kikapcsolt hálózati modellfeloldással: 70,305 másodperc. A dokumentált mypy-ellenőrzés 7 forrásfájlon sikeres. A Swift-fordítás, a külön VibeVoice-alkalmazás újraépítése és szigorú aláírásellenőrzése sikeres. A natív alkalmazásból mentett teljes MP3 hibamentesen dekódolható.
+
+### Standards
+
+A `80020d6...2ffe165` diff külön Standards-ellenőrzése 0 dokumentált szabálysértést és 0 javítást indokoló baseline kódszagot talált. A modelladapter, előkészítés és közös generálás felelőssége elkülönül, új tesztelési határ nem került be.
+
+### Spec
+
+A külön Spec-ellenőrzés 0 igazolt követelményhibát talált. A rögzített teljes magyar checkpoint, kvantálás, saját férfireferencia, helyi tokenizáló, kötelező GPU, külön alkalmazás, 1,0× tempó, biztonságos véglegesítés és kézi lejátszás megfelel a #10-nek. A felhasználó helyi meghallgatása az egyetlen nyitott átvételi feltétel; nem tekinthető az ASR-rel kiváltottnak.
+
+Összesítés: Standards 0, Spec 0 fennmaradó finding. A #10 nyitva marad a férfiminta emberi elfogadásáig; a #11/#12 feladatokat nem tekintjük elkészültnek.
 
 ## Források
 
