@@ -6,7 +6,7 @@ Dátum: 2026-11-10. Feladat: https://github.com/szarkab/audio-book/issues/3
 
 ## Működés
 
-Egy kiválasztott UTF-8 TXT teljes tartalma automatikusan, egyetlen MP3-ba kerül. Nincs 600 karakteres fájlkorlát, kézi darabolás vagy köztes jóváhagyás. Belsőleg mondat- és önálló bekezdéshatárokon készülnek a modell bemenetei; a magyar rövidítések, dátumok, névkezdőbetűk és az idézett beszédhez tartozó közlés egyben marad. A szövegrészek összefűzése az eredeti előnézeti szöveget adja.
+Egy kiválasztott UTF-8 TXT teljes tartalma automatikusan, egyetlen MP3-ba kerül. Nincs 600 karakteres fájlkorlát, kézi darabolás vagy köztes jóváhagyás. Belsőleg legfeljebb két mondatot tartalmazó egységek készülnek, mondat- és önálló bekezdéshatárokon; a magyar rövidítések, dátumok, névkezdőbetűk és az idézett beszédhez tartozó közlés egyben marad. A szövegrészek összefűzése az eredeti előnézeti szöveget adja.
 
 A modell egy feladaton belül egyszer töltődik be. A hangrészek 4096 képkockás blokkokban nyers PCM-fájlhoz kerülnek, nem a teljes könyv hangja halmozódik RAM-ban. A végén egyszer készül el a mono, 24 kHz-es, 96 kbit/s MP3, felülírást kizáró véglegesítéssel. Üres vagy levágott hangrész hibát okoz, csonka könyv nem kap kész állapotot. A százalék a feldolgozott szövegre vonatkozik; az MP3-összeállítás külön állapot.
 
@@ -50,7 +50,17 @@ Valódi felületi próba: némított lejátszás elindult, a Szünet gomb megál
 
 ## Záró ellenőrzés
 
-A célzott generálási és hosszúszöveg-tesztek, a Python-típusellenőrzés és a Swift-fordítás sikeresek. A végső két tengelyű review és teljes tesztfutás eredménye lezáráskor rögzítendő. A természetességi átvétel továbbra is nyitott.
+A végső teljes futás mind a 20 tesztje sikeres, bekapcsolt valódi M5-modellregresszióval (`AUDIOBOOK_REAL_MODEL_TEST=1`); 18,51 másodperc. A dokumentált Python-típusellenőrzés 6 forrásfájlon sikeres. A Swift-fordítás, a fejlesztői alkalmazás újraépítése és az alkalmazás aláírásának ellenőrzése sikeres. A végső teljes MP3 FFmpeg-dekódolása hibamentes. Nem indult automatikus lejátszás.
+
+### Standards
+
+A `06cb9fe...79fd350` változások ellenőrzése: 0 dokumentált szabálysértés, 0 javítást igénylő kódszag. A jelzett elavult hullámforma-regressziós tesztleírást pontosítottuk.
+
+### Spec
+
+A review egy P2 hibát talált: a számmal végződő mondatok pontját a bontás mindig dátumként kezelte, ezért négymondatos rész keletkezhetett. A `de641db` javítás teljes generálási regressziós próbája először hibázott, majd sikeres lett; a számos dátumok és címrövidítések továbbra is egyben maradnak. A reviewer visszaellenőrizte a javítást. Fennmaradó igazolt kódhiba: 0.
+
+Összesítés: Standards 0, Spec 0 fennmaradó finding. A hosszú narráció természetességének és hangállandóságának emberi átvétele nyitott; a #3 nincs lezárva.
 
 
 ## Újabb felhasználói visszajelzés és véglegesített javítási irány
@@ -68,3 +78,5 @@ A teljes hang mind a 20 részének beszélő-összehasonlításában az eredeti 
 A részek 20 ms-os képkockáiból becsült aktív beszédszint alapján egységes hangerőt kapnak, konzervatív csúcskorláttal. Egy szándékosan húszszoros szintugrást tartalmazó teljesfolyamat-teszt először hibázott, a javítás után sikeres lett. Nem távolítunk el szavakat vagy hangrészeket, és a részeken belüli dinamika arányai megmaradnak. A feldolgozás veszteségmentes PCM-ben áll össze; nincs részenkénti MP3-újratömörítés.
 
 A helyi diagnosztikai anyagok az `artifacts/issue3-two-sentences` és `artifacts/issue3-final` könyvtárban találhatók, nem kerülnek Gitbe. A beszélődiagnosztika a hivatalos sherpa-onnx kiadás 28 MB-os CAMPPlus modelljét használta; nem része az alkalmazás futtatási függőségeinek. A végső hang a `ketmondatos-ferfi.mp3`. A felhasználó megnyitott mentési ablakát a frissítés közben érintetlenül hagytuk.
+
+A végső hang első körülbelül 21 másodperce újratömörítés nélkül a `artifacts/issue3-final/rovid-proba.mp3` fájlban is elérhető, hogy ne kelljen a teljes mintát végighallgatni.
