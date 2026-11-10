@@ -80,7 +80,8 @@ class GenerationTests(unittest.TestCase):
         original = ("2026. 11. 10. fejezet: keltezési példa. 2026. november 10. "
                     "Dr. Kovács a Fő utca 12. sz. alatt lakik. Verzió: v1.2.3. "
                     "A 1.2. fejezet verziócímke. Érték: 3,14 és 1.5. "
-                    "A darabszám 1. Ez egy mondat. A 101. fejezet. 01. fejezet.")
+                    "A darabszám 1. Ez egy mondat. A 101. fejezet. 01. fejezet. "
+                    "A darabszám 1. Próba következik. Az eredmény 2. Hely már nincs.")
         self.source.write_text(original)
         received = []
         def capture(text, destination, notify, settings):

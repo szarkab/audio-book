@@ -60,7 +60,6 @@ def speech_parts(text: str) -> Iterator[str]:
 _ORDINAL_PHRASE = re.compile(
     r"(?<![\w.,:/+−-])([1-9][0-9]{0,2})\.([ \t]+)"
     r"(?=(?:fejezet|próba|versenyző|hely|alkalom|emelet|kötet|oldal|pont|rész|lépés)\b)",
-    re.IGNORECASE,
 )
 _ORDINAL_UNITS = ("", "egyedik", "kettedik", "harmadik", "negyedik", "ötödik",
                   "hatodik", "hetedik", "nyolcadik", "kilencedik")
@@ -75,7 +74,11 @@ def prepare_narration(text: str) -> str:
     """Expand only 1–100 before a documented ordinal noun; preserve other text."""
     def expand(match: re.Match[str]) -> str:
         number = int(match[1])
-        if number > 100 or re.search(r"\d\.[ \t]+$", text[:match.start()]):
+        before = match.start()
+        while before > 0 and text[before - 1] in " \t":
+            before -= 1
+        follows_number = before >= 2 and text[before - 1] == "." and text[before - 2].isdecimal()
+        if number > 100 or follows_number:
             return match[0]
         if number == 1:
             word = "első"
