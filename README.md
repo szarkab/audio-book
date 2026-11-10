@@ -4,6 +4,8 @@ Magyar TXT-fájlok helyi felolvasása férfi narrátorhanggal, Apple Silicon Mac
 
 ## Magyar VibeVoice-próbaváltozat
 
+**A hosszú felhasználói próba elutasított:** hangváltások, torzulás és túl lassú működés miatt ez a konfiguráció nem elfogadott hangoskönyves megoldás. [Meglévő motorok és célgépes rövid alternatív próbák](docs/existing-hungarian-tts-solutions.md).
+
 A további fejlesztés kiválasztott modellje a `Cseti/VibeVoice_7B_hun_v2`. Az M5/32 GB gépen a 4 bites nyelvi modullal és eredeti F32 hangképző komponensekkel előkészített változat rövid magyar TXT-ből helyben készít MP3-at. Az új hang eredeti tempóval, 1,0× exporttal működik; a korábbi OmniVoice-gyorsítást nem örökli. A hosszú VibeVoice-narráció és a sorszámkiejtés külön feladat, a rövid hang emberi elfogadása még nyitott.
 
 ```sh

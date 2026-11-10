@@ -73,3 +73,8 @@ A külön Spec-ellenőrzés 0 igazolt követelményhibát talált. A rögzített
 - [Magyar modell és feltételei](https://huggingface.co/Cseti/VibeVoice_7B_hun_v2)
 - [Eredeti alapmodell előfeldolgozási konfigurációja](https://huggingface.co/aoi-ot/VibeVoice-Large/blob/1b81fecc784a076dcd935678db551871f4598ebf/preprocessor_config.json)
 - [MLX VibeVoice-kód](https://github.com/Blaizzy/mlx-audio/tree/main/mlx_audio/tts/models/vibevoice)
+
+
+## Későbbi felhasználói hosszú próba: elutasítva
+
+A felhasználó a hosszú eredményt használhatatlannak minősítette: hangváltások, szaggatás, hörgő/torz hangok és túl hosszú futási idő. A rövid próbák műszaki és ASR-sikere nem igazolta ezt a minőséget. A napló szerint a feladat 2977,21 másodpercig (49,62 perc) tartott, és 629,07 másodpercnyi hangot adott. A jelenlegi konfiguráció nem tekinthető elfogadott hangoskönyv-megoldásnak. A felhasználó meglévő, működő motorok és alkalmazások kutatását kérte; ennek eredménye az [alternatívák és külön rövid próbák](existing-hungarian-tts-solutions.md) dokumentuma. A hibát nem minősítjük bizonyítottan egyedül a modell, a referencia vagy az MLX-megvalósítás hibájának, mert ezek elkülönített oksági vizsgálata nem történt meg.
