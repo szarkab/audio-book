@@ -18,9 +18,9 @@ A modell letöltési útja és rögzített revíziója a [hangpróba leírásáb
 open artifacts/HangosKonyv.app
 ```
 
-Az így létrejövő alkalmazásablakból választható ki a TXT-fájl, látható az előnézet, elindítható a generálás, és megnyitható a kész MP3. Meglévő célfájlt nem ír felül; új nevet kell választani. Ha az előnézet óta megváltozott a forrásszöveg, az alkalmazás új kiválasztást kér.
+Az így létrejövő alkalmazásablakból választható ki a TXT-fájl, látható az előnézet, elindítható a generálás, és a kész MP3 az ablak saját lejátszójával hallgatható meg. A lejátszás csak a Lejátszás gombra indul, bármikor szüneteltethető vagy leállítható; nincs automatikus átadás a Zene alkalmazásnak. Meglévő célfájlt nem ír felül; új nevet kell választani. Ha az előnézet óta megváltozott a forrásszöveg, az alkalmazás új kiválasztást kér.
 
-A teljes kiválasztott szöveg automatikusan végigfut; belső részeket nem kell jóváhagyni és nincs külön részexport. A mondatok és önálló bekezdések határain dolgozik. A férfihangot az elfogadott szintetikus mintából rögzített hangreferencia tartja állandó kiindulóponton, amelyet a modell egyszer kódol egy feladathoz. A hosszú narráció tényleges minőségét meghallgatással kell elfogadni.
+A teljes kiválasztott szöveg automatikusan végigfut; belső részeket nem kell jóváhagyni és nincs külön részexport. A mondatok és önálló bekezdések határain dolgozik. A férfihang az eredetileg elfogadott hangtervezési beállítást használja; a hangreferenciás kísérletet a felhasználó által jelzett hibák miatt visszavontuk. A hosszú narráció hangállandósága és minősége további átvételt igényel.
 
 A teljes hanganyag nem kerül egyszerre RAM-ba: a modell egy szövegrész hangját tartja memóriában, a hangrészek folyamatosan lemezre kerülnek, és egyszer, a végén készül el az MP3. Az átmeneti tárhely a hanghosszal nő, a teljes modell kontextusához szükséges memória a legnagyobb feldolgozott mondat méretétől is függ. Egyetlen rendkívül hosszú, mondat- és bekezdéshatár nélküli szöveg továbbra is elérheti a modell erőforráskorlátait; a rendszer nem csonkolja észrevétlenül.
 

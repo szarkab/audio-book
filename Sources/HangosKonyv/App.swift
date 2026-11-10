@@ -13,6 +13,7 @@ final class GenerationModel: ObservableObject {
     @Published var progress: Double?
     @Published var status = "Válassz egy magyar TXT-fájlt."
     @Published var error: String?
+    let playback = AudioPlayback()
     private let backend = Backend()
 
     func selectSource() {
@@ -21,6 +22,7 @@ final class GenerationModel: ObservableObject {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
+        playback.clear()
         source = nil
         preview = ""
         digest = ""
@@ -46,6 +48,7 @@ final class GenerationModel: ObservableObject {
 
     func generate() {
         guard let source, !busy else { return }
+        playback.stop()
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.mp3]
         panel.nameFieldStringValue = source.deletingPathExtension().lastPathComponent + "-hang.mp3"
@@ -69,7 +72,9 @@ final class GenerationModel: ObservableObject {
                         progress = min(1, max(0, Double(completed) / Double(total)))
                     }
                     if event.state == "completed", let path = event.output {
-                        output = URL(fileURLWithPath: path)
+                        let url = URL(fileURLWithPath: path)
+                        output = url
+                        playback.load(url)
                     }
                 }
             } catch { show(error) }
@@ -136,13 +141,14 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .padding(16)
             }
-            .frame(minHeight: 220)
+            .frame(minHeight: model.output == nil ? 220 : 140)
             .background(.background, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.quaternary))
             if let error = model.error {
                 Label(error, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red).textSelection(.enabled)
             }
+            if model.output != nil { PlaybackControls(player: model.playback) }
             if model.busy, let progress = model.progress {
                 VStack(alignment: .leading, spacing: 5) {
                     ProgressView(value: progress)
@@ -155,7 +161,6 @@ struct ContentView: View {
                 Text(model.status).foregroundStyle(.secondary)
                 Spacer()
                 if let output = model.output {
-                    Button("MP3 megnyitása", systemImage: "play.fill") { NSWorkspace.shared.open(output) }
                     Button("Mutasd a Finderben") { NSWorkspace.shared.activateFileViewerSelecting([output]) }
                 }
                 Button("MP3 készítése", systemImage: "waveform") { model.generate() }
@@ -167,7 +172,7 @@ struct ContentView: View {
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(28)
-        .frame(minWidth: 760, minHeight: 580)
+        .frame(minWidth: 760, minHeight: 680)
     }
 }
 
@@ -178,7 +183,7 @@ struct HangosKonyvApp: App {
         WindowGroup {
             ContentView(model: GenerationModel.shared)
         }
-        .defaultSize(width: 900, height: 640)
+        .defaultSize(width: 900, height: 740)
         .commands {
             CommandGroup(replacing: .newItem) { }
         }
