@@ -4,3 +4,7 @@ artifacts/
 __pycache__/
 *.pyc
 .DS_Store
+
+.build/
+.swiftpm/
+.mypy_cache/
