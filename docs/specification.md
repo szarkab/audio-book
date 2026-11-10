@@ -1,6 +1,6 @@
 # Magyar hangoskönyv-készítő alkalmazás — specifikáció és megvalósítási terv
 
-Állapot: felülvizsgálható tervezet, 2026-11-10. A felhasználói munkamenet egyeztetett; a tesztelési határ jóváhagyása még szükséges a publikáláshoz. A projekt issue trackere a GitHub Issues, az öt alapértelmezett triage-címkével. Az alkalmazás megvalósítása még nem kezdődött el.
+Állapot: elfogadott specifikáció, 2026-11-10. GitHub issue: https://github.com/szarkab/audio-book/issues/1. A felhasználó jóváhagyta a teljes generálási feladatra épülő tesztelési határt és a GitHub-issue-ként történő publikálást ready-for-agent címkével. A projekt issue trackere a GitHub Issues, az öt alapértelmezett triage-címkével. Az első megvalósítási lépés a helyi magyar hangpróba.
 
 ## Problem Statement
 
@@ -79,11 +79,11 @@ Első használatkor a szükséges beszédmodell letölthető az internetről. A 
 
 ## Testing Decisions
 
-### Jóváhagyásra javasolt elsődleges tesztelési határ
+### Jóváhagyott elsődleges tesztelési határ
 
 A teljes generálási feladat nyilvános felületén teszteljünk: bemenetként forrásszöveg, narrátorhang és beállítások; megfigyelhető eredményként feladatállapot és lejátszható MP3. Ugyanezen a határon történjen a szüneteltetés, a folyamat újraindítása és a folytatás ellenőrzése. A tesztek ne belső osztályokat vagy konkrét technikai darabolási módszert rögzítsenek.
 
-A tárolóban még nincs alkalmazáskód vagy meglévő tesztelési gyakorlat. A fenti egyetlen elsődleges határ új javaslat; a felhasználó jóváhagyása még függőben van.
+A tárolóban még nincs alkalmazáskód vagy meglévő tesztelési gyakorlat. A felhasználó a fenti egyetlen elsődleges tesztelési határt jóváhagyta; a hangminőséget meghallgatással fogadja el.
 
 ### Ellenőrizendő külső viselkedés
 
@@ -137,4 +137,4 @@ Ezek jelöltekhez tartozó dokumentációk, nem a célgépen végzett mérés bi
 
 ### Publikálás
 
-A projekt issue trackere a szarkab/audio-book GitHub Issues felülete. Az öt alapértelmezett triage-címke elfogadott. Ez a tervezet még nem publikált issue, és nincs rajta ready-for-agent státusz. A tesztelési határ jóváhagyása után az elfogadott specifikációt GitHub-issue-ként kell publikálni, ready-for-agent címkével.
+A projekt issue trackere a szarkab/audio-book GitHub Issues felülete. Az öt alapértelmezett triage-címke elfogadott. A felhasználó jóváhagyta e specifikáció GitHub-issue-ként történő publikálását ready-for-agent címkével.

@@ -1,0 +1,2 @@
+# Python 3.12; isolated local Apple Silicon voice trial.
+mlx-audio==0.6.5
