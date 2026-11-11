@@ -9,7 +9,7 @@ Magyar UTF-8 TXT-fájlok helyi felolvasása Piper Imre férfihanggal, Apple Sili
 1. Az alkalmazás DMG-ből telepíthető, és terminál vagy külön fejlesztői környezet nélkül indítható macOS 26 vagy újabb rendszeren.
 2. A hiányzó modell az alkalmazásból tölthető le, látható mérettel és állapottal. A letöltött fájlokat ellenőrzőösszegek védik; sikertelen letöltés újrapróbálható.
 3. A TXT kiválasztása után az előnézet a ténylegesen felolvasandó szöveget mutatja. Az eredeti fájl változatlan marad. Az előnézet óta módosult forrást újra ki kell választani.
-4. A felolvasási beállítások a generálás előtt módosíthatók. A teljes szöveg köztes jóváhagyás nélkül készül el, haladásjelzéssel és érthető hibaüzenetekkel.
+4. A felolvasási beállítások a generálás előtt módosíthatók. A teljes szöveg automatikusan készül el, haladásjelzéssel és érthető hibaüzenetekkel.
 5. A kész MP3 kézzel indítható, szüneteltethető, leállítható és tekerhető a saját lejátszóban, valamint megkereshető a Finderben.
 6. A következő TXT külön feladatban dolgozható fel. A korábbi MP3-ak nem íródnak felül.
 

@@ -1,41 +1,31 @@
-# Alkalmazáson belüli Piper Imre-beszerzés — #6
+# Piper Imre modellbeszerzés — #6
 
-> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+> Archív műszaki dokumentum, 2026-11-10–11. A jelenlegi működés leírása a [specifikációban](specification.md) található.
 
-Lezárás: 2026-11-11. A megvalósítás a #13-ban elfogadott, változatlan Imre-modellt használja; a #11 külön hosszú szöveghűségi átvételét nem zárja le.
+Kapcsolódó feladat: [#6](https://github.com/szarkab/audio-book/issues/6). Dátum: 2026-11-11.
 
-## Működés
+## Modell és integritás
 
-A natív felület külön jelzi a hiányzó, letöltés alatt álló, hiányos/sérült és használatra kész modellt. A letöltés 63227862 byte (63,2 MB); a szükséges szabad hely 127504300 byte, kerekítve legalább 128 MB. A letöltési előrehaladás látható, hiba után újrapróbálható. A modell eredete, a rögzített modellkártya és a Piper licence közvetlen hivatkozást kap.
+A beszerzés az ONNX-modellt, a konfigurációt és a modellkártyát tölti le a `rhasspy/piper-voices` `cf910fb59f1d79ab3b625a63993a108751c6c25d` revíziójából. A fájlokhoz rögzített méret és SHA-256 ellenőrzőösszeg tartozik.
 
-A rögzített cf910fb59f1d79ab3b625a63993a108751c6c25d revízióból származó ONNX-modell, konfiguráció és modellkártya külön várt méretet és SHA-256 ellenőrzőösszeget kap. A beszerzés ideiglenes mappába történik, kizáró fájlzárral; csak a teljes ellenőrzött fájlkészlet kerül a modell helyére. Hálózati hiba, hiányos állomány vagy tárhelyhiba nem eredményez használatra kész hibás modellt.
+A teljes letöltés 63 227 862 byte; a szükséges szabad hely 127 504 300 byte, kerekítve legalább 128 MB. A célkönyvtár `~/Library/Application Support/HangosKonyv/models/piper-imre`.
 
-A tartós hely a felhasználó Library/Application Support/HangosKonyv/models/piper-imre mappája. A fejlesztői előkészítő ugyanazt a beszerzési útvonalat használja, mint az app. A generálás önmagában nem tölt le és nem tölt fel szöveget. A szükséges Piper/espeak-ng és MP3-kódoló a jelenlegi fejlesztői környezet része; az önálló terjeszthető csomag továbbra is #7.
+A letöltés kizáró fájlzárral, ideiglenes könyvtárba történik. Csak a teljes és ellenőrzött fájlkészlet válik használhatóvá. A natív felület külön jelzi a hiányzó, letöltés alatt álló, hiányos vagy sérült és használatra kész állapotot, a méretet és az előrehaladást. Hiba után újrapróbálható.
 
-## Tesztelés
+## Ellenőrzési eredmények
 
-A meglévő teljes feladatszolgáltatás nyilvános felületén vizsgáltuk a modellbeszerzés → offline MP3 folyamatot. Az első hálózati hibás újrapróbálási teszt a hiányzó képesség miatt hibázott, majd a megvalósítással sikeres lett. Csak külső hálózati/fájlrendszeri határokat helyettesítenek a gyors próbák.
+- Hálózati hiba és hiányos letöltés esetén nincs használatra kész modell; az ideiglenes adatok törlődnek.
+- Elégtelen tárhely esetén a hiba a hálózati hozzáférés előtt jelentkezik.
+- Sérült modell újraletöltése és az ezt követő offline MP3-generálás sikeres.
+- A natív alkalmazás üres modellkönyvtárból indulva sikeresen letöltötte a modellt, majd újraindítás után, a próbafolyamat hálózati elérését tiltó macOS-profillal is generált MP3-at. A tiltás működését külön sikertelen HTTPS-kérés igazolta.
+- Az akkori tesztcsomag 32/32 próbája sikeres (5,422 s); a mypy 8 forrásfájlon hibamentes, a Swift-fordítás és az aláírás-ellenőrzés sikeres.
 
-- Hálózati hiba után nincs kész állapot, és újabb letöltés indítható.
-- Hiányos letöltésből nem készül használható modell vagy MP3; az ideiglenes adatok eltűnnek.
-- Elégtelen tárhelynél hálózati hozzáférés előtt érthető hiba keletkezik.
-- Valódi rögzített modellfájlokkal a beszerzés, sérült modell javító újraletöltése és új szolgáltatáspéldányból, tiltott HTTP-hívásokkal végzett MP3-generálás sikeres.
-- A végső teljes csomag 32/32 tesztje valódi Piper-integrációval sikeres (5,422 s). mypy: 8 forrásfájl hibamentes. Swift-fordítás, szigorú appaláírás-ellenőrzés és git diff --check sikeres.
+| Offline natív minta | Eredmény |
+| --- | --- |
+| Hanghossz | 15,093 s |
+| MP3 mérete | 182 061 byte |
+| Futási idő | 0,982 s |
+| Folyamat csúcs-RSS | 272 121 856 byte |
+| Logikai átmeneti hangméret | 1 137 486 byte |
 
-## Natív első letöltés és offline újraindítás
-
-Az üres tartós modellhelyet a natív app hiányzóként jelezte, 63,2 MB mérettel és letöltési gombbal. Az ablakból indított valódi internetes beszerzés után „használatra kész” állapot jelent meg.
-
-Az alkalmazást ezután bezártuk és újraindítottuk kizárólag erre a tesztfolyamatra érvényes macOS-profillal, amely minden hálózati műveletet tiltott. Ugyanezzel a profillal egy HTTPS-próbakérés ténylegesen hibázott. A gép globális hálózati és biztonsági beállításai nem változtak.
-
-Az újraindított app a letöltött modellt felismerte, a TXT-t előnézetben megmutatta és egyetlen MP3-at készített. Eredmény: 15,093 s hang, 182061 byte MP3, 0,982 s futás, 272121856 byte folyamatcsúcs-RSS, 1137486 byte logikai átmeneti hangméret. A lejátszó „Leállítva”, 0:00 állapotban maradt; automatikus hang nem indult. A próba végén a tesztpéldányt lezártuk, az appot szokásosan újranyitottuk.
-
-Az új tartós példány ellenőrzése után a projekt .local/models/piper-imre mappájában lévő, azonos és újra előállítható régi másolatot eltávolítottuk. A könyvforrások és felhasználói hanganyagok megmaradtak.
-
-## Standards
-
-Összehasonlítás: 7296aa7...c83db8c. 0 dokumentált szabálysértés és 0 javítást indokoló kódszag. A közös modelljegyzék és beszerzési út megszünteti a korábbi kettős letöltési logikát; konkrét integritási vagy konkurenciakezelési hibát a review nem talált.
-
-## Spec
-
-0 igazolt eltérés, 0 azonosított hiány. A hiányzó/letöltés/kész állapot, méret, tárhelyigény, ellenőrzött fájlkészlet, újrapróbálás, eredet/licenc és a natív offline újraindítás igazolt. A DMG és a #11 minőségi átvétele külön marad.
+A kész fájl betöltése után a lejátszó leállított, 0:00 állapotban maradt. A letöltés és a generálás közös modelljegyzéket használ; a generálás nem végez automatikus modellletöltést vagy szövegfeltöltést.

@@ -1,68 +1,52 @@
-# #13 — Kizárólag Piper Imre
+# Piper Imre motor és mérések — #13
 
-> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+> Archív műszaki dokumentum, 2026-11-10–11. A jelenlegi működés leírása a [specifikációban](specification.md) található.
 
-2026-11-10. [Aktuális feladat](https://github.com/szarkab/audio-book/issues/13). A felhasználó a három új helyi mintából a Piper Imrét fogadta el; Supertonic M2/M5 és a hosszú VibeVoice-eredmény elutasított.
+Kapcsolódó feladat: [#13](https://github.com/szarkab/audio-book/issues/13).
 
-## Megvalósítás
+## Motor
 
-Az egyetlen alkalmazás `HangosKonyv.app`. Az összes aktív generálási út közvetlenül a kész Piper 1.8.0 motort használja, a rögzített `hu_HU-imre-medium` hanggal, eredeti tempóval. Modellválasztó, hangklónozás és régi gyorsítás nincs az aktív folyamatban. A saját lejátszó kézzel indul és leállítható.
+A Piper 1.8.0 a `hu_HU-imre-medium` modellt használja, a `rhasspy/piper-voices` `cf910fb59f1d79ab3b625a63993a108751c6c25d` revíziójából. Az ONNX-modell mérete 63 221 984 byte; a modell és a konfiguráció integritását ellenőrzőösszeg védi. A motor espeak-ng fonemizálást és ONNX Runtime CPU-végrehajtást használ.
 
-A modell a `rhasspy/piper-voices` `cf910fb59f1d79ab3b625a63993a108751c6c25d` revíziójából származik. A modell és konfiguráció ellenőrzőösszege a futtatóban rögzített, az első betöltés ellenőrzi. Másik hang vagy sérült fájl nem használható észrevétlenül. A 63 221 984 byte-os ONNX-modell és a kis konfiguráció a `.local/models/piper-imre` alatt található. A helyi Piper saját espeak-ng komponensét és az ONNX Runtime CPU-végrehajtóját használja, letöltési API nélkül.
+A 22 050 Hz-es PCM-hang 24 kHz-es veszteségmentes munkafolyamba alakul, a tempó és hangmagasság megváltoztatása nélkül. A rövid részek közös feldolgozáson és egyszeri, mono 96 kbit/s MP3-kódoláson mennek át. A modell feladatonként egyszer töltődik be. Az aktív alkalmazás nem tartalmaz alternatív motort vagy hangklónozást.
 
-Az eredeti Piper 22 050 Hz-es PCM-jét FFmpeg alakítja a meglévő 24 kHz-es veszteségmentes összeállításhoz. Ez a mintavételt változtatja, a tempót és hangmagasságot nem. A meglévő részenkénti beszédszint-kiegyenlítés és az egyszeri 96 kbit/s mono MP3-kódolás marad. A teljes forrásfájl sorrendjét és teljességét a közös feladatszolgáltatás kezeli; a modell egy feladaton belül egyszer töltődik be.
+## Célgépes mérések
 
-A tisztított fő környezet 218 MB körüli, az Imre-modell 60 MiB körüli. Az MLX, Transformers, Hugging Face és korábbi hangkódolók kikerültek a futtatási függőségekből. A régi, kis forrásállományok a felhasználó külön, tételes jóváhagyása után eltávolítva.
+| Mért adat | Hosszabb minta | Rövid natív minta |
+| --- | --- | --- |
+| Bemenet | 5395 karakter, 38 belső rész | Rövid TXT |
+| Generálási idő | 9,637 s | 1,023 s |
+| Hanghossz | 360,827 s | 15,128 s |
+| MP3 mérete | 4 330 989 byte | 182 637 byte |
+| Folyamat csúcs-RSS | 618 348 544 byte | 266 731 520 byte |
+| Logikai átmeneti hangméret | 21 650 699 byte | — |
 
-## Célgépes hosszú próba
+Mindkét teljes MP3 hibamentesen dekódolható volt. A hosszabb minta helyi ASR-eltérése 5,31% karakteres és 15,30% szószintű volt, 876 várt és 869 felismert szóval. A 3%-os diagnosztikai karakterküszöb nem teljesült. A mérés nem bizonyít hibátlan kiejtést vagy szöveghűséget.
 
-A korábbi felhasználói forrásból, változatlan fájlból 5395 karakter és 38 belső rész került feldolgozásra. A generálás 9,637 másodpercig tartott; a kész MP3 hossza 360,827 másodperc, mérete 4 330 989 byte. A folyamat csúcs-RSS-e 618 348 544 byte; ez nem a teljes gép memóriája. Az átmeneti hanganyag legnagyobb logikai mérete 21 650 699 byte. E rövid célgépes mérésből nem ígérünk minden teljes könyvre azonos sebességet.
+Az akkori tesztcsomag 21 sikeres próbát tartalmazott valódi Piperrel (2,466 s), hibamentes típusellenőrzéssel, Swift-fordítással és aláírás-ellenőrzéssel. A jelenlegi csomag eredményeit az [ellenőrzési összefoglaló](final-acceptance.md) tartalmazza.
 
-A régi diagnosztikai környezet eltávolítása előtti egyszeri helyi ASR-vizsgálatban a normalizált karakteres eltérés 5,31%, a szószintű eltérés 15,30% lett; 876 várt és 869 felismert szóval. Az eltérések között számok betűs alakja, idegen nevek és írásmód mellett közönséges szavak eltérései is vannak. Az ellenőrzés a korábbi 3%-os karakterküszöbön nem ment át; nem tekintjük tartalmi vagy természetességi átvételnek. A hosszú hang tényleges kiejtése emberi ellenőrzésre vár. A felhasználó csak a korábbi rövid Piper-mintát fogadta el.
+## Szünet- és tempókísérlet
 
-A tartós automatizált valódi modellpróba most a Piper teljes fájl → MP3 útját ellenőrzi: nem üres, hallható, véges és megfelelő időtartamú dekódolt hang. Nem állít ASR-tartalmi megfelelést. A gyors tesztek szabályozható külső hanggenerátorral továbbra is a teljes feladatnál ellenőrzik a forrássorrendet, kétmondatos feldolgozást, hibákat, véglegesítést és felülírásvédelmet.
+Egy elkülönített vizsgálat a Piper fonéma-időzítési kimenetét használta, a modell súlyainak módosítása nélkül. A három vesszőnél mért szakasz 69,66 / 81,27 / 116,10 ms volt. A kísérlet ezeket 180 ms-ra egészítette ki, a mondatvégen legalább 350 ms helyet hagyva. A csendbeszúrás a jelölt szakasz legcsendesebb 10 ms-os ablakában történt.
 
-## Takarítás
+| Konfiguráció | Hanghossz |
+| --- | --- |
+| Összehasonlító alap | 11,32 s |
+| Hozzáadott szünetek | 11,84 s |
+| Hozzáadott szünetek, 1,08 length_scale | 12,31 s |
 
-A kizárólag a régi kísérletekhez letöltött OmniVoice-, teljes VibeVoice-forrás-, átalakított VibeVoice-, Whisper- és beszélődiagnosztikai modellekből összesen 52 270 032 933 logikai byte törölve. Ez fájlméretösszeg, nem független lemezfoglalási mérés. Az újra előállítható alternatív tesztkörnyezet és modellmásolatok is törölve. Csak az Imre modell maradt aktív.
+Minden eredeti nem nulla PCM-minta változatlan sorrendben maradt, de ez önmagában nem bizonyít hallhatatlan illesztést. Meghallgatáskor mindkét kísérleti változat gyorsított hatásúnak és az alapnál gyengébbnek tűnt. A különböző szöveg, véletlenmag és időzítési kimenet miatt a pontos akusztikai ok nem különült el. A kísérleti beállítások nem részei az alkalmazásnak; a Piper alapértékei maradtak érvényben.
 
-A régi tesztalkalmazás és kisebb saját próbafájlok visszaállíthatóan a Kukába kerültek. A korábbi könyvforrások, a Downloads mappába felhasználó által mentett hangok, más projektek és a Git története változatlanok. A felhasználó a pontos [törlési listát](piper-retired-files.md) külön jóváhagyta; a tíz régi forrás-/referenciafájl és a két saját kukabeli tesztmaradvány eltávolítva. A futó Piper-alkalmazás és a felhasználó új hosszú tesztje nem változott. A takarítási munkaszabály az AGENTS.md-be is bekerült.
+## Miért gyors a Piper?
 
-## Ellenőrzés
+A VITS-alapú modell egy mondat fonémaazonosítóiból egyetlen ONNX-futtatással állít elő hangot. Nincs diffúziós lépésszám vagy több számítással nagyobb modellkapacitást biztosító minőségi kapcsoló. A tempó, a véletlenszerűségi paraméterek és a hangerő a megszólalást módosítják. Több CPU-szál vagy GPU-használat önmagában nem javítja a hangsúlyozást; a magasabb MP3-bitrátának a tömörítési veszteségre lehet hatása.
 
-A teljes csomag 21 tesztje valódi Piper-integrációval sikeres, 2,466 másodperc alatt. A dokumentált típusellenőrzés sikeres. A fejlesztői alkalmazás fordítása és szigorú aláírásellenőrzése sikeres. A natív fájlválasztás és előnézet után az ablakból indított generálás elkészült; az eredmény 0:15 hosszú MP3-ként, „Leállítva” állapotban jelent meg. Automatikus lejátszás nem indult. A rövid natív futás 1,023 másodperc alatt 15,128 másodperces, 182 637 byte-os MP3-at készített; a csúcs-RSS 266 731 520 byte. Mind a rövid, mind a hosszú teljes MP3 hibamentesen dekódolható.
+## Korábbi függőségek
 
-## Standards
+Az OmniVoice-, VibeVoice-, Whisper- és beszélődiagnosztikai modellállományok összesített eltávolított logikai mérete 52 270 032 933 byte volt. Az MLX, Transformers és a régi hangkódolók nem aktív futtatási függőségek. A kis történeti források listája az [eltávolított komponenseknél](piper-retired-files.md) található.
 
-A `73fccdd...095bdd4` diff külön Standards-reviewja 0 dokumentált szabálysértést és 0 javítandó baseline kódszagot talált. A kizárólagos Piper-adapter és a közös feladatszolgáltatás felelőssége elkülönül, a takarítási kivételek pontosan megnevezettek.
+## Források
 
-## Spec
-
-A külön Spec-review 0 igazolt kódhibát talált az aktív #13-folyamatban. A rögzített eredeti Piper, a normál tempó, a helyi futás, a saját lejátszó és a biztonságos kimenet megfelel az új felhasználói döntésnek. A hosszú hang emberi átvétele és a fennmaradó pontos törlési lista külön lezárandó; az ASR-tartalmi eltérés nincs sikernek minősítve.
-
-Összesítés: Standards 0, Spec 0 fennmaradó kódhiba. A takarítás lezárva. A felhasználó a későbbi hosszú teszt után a jelenlegi Piper-minőséget egyelőre elfogadhatónak minősítette; ez a változat az elfogadott fejlesztési alap. Az elvetett #9/#10 VibeVoice-feladatok not_planned állapottal lezárva, a #11/#12 és a további feladatok Piperre és az új függőségekre igazítva.
-
-
-## Felhasználói visszajelzés és szünetpróba
-
-A nagyobb Piper-teszt a felhasználó szerint nagyon biztató és gyors, a hangminőség az eddigi legjobb. Ugyanakkor kapkodónak érzi, rövid vesszőszünetekkel és hibás hangsúlyokkal. Ez további természetességi finomítás, nem végleges hosszúanyag-átvétel.
-
-A rögzített Imre-modell a Piper 1.8.0 hivatalos, memóriában hozzáadott fonéma-időzítési kimenetét támogatja. A modellfájl súlyai nem változnak. Három vesszőnél a próba 69,66 / 81,27 / 116,10 ms időzítést adott. Egy elkülönített hangpróba ezeket 180 ms-os jelölt szünetre egészítette ki, és a mondatvégi modellfarokkal együtt legalább 350 ms helyet hagyott. A beszúrás a jelölt vesszőszakasz legcsendesebb 10 ms-os ablaka közepén történik, tisztán beszélt régiót nem vágunk szét. A szünetes változat minden eredeti nem nulla PCM-mintát változatlan sorrendben megtartott; csak csend került közéjük. Ez nem bizonyítja, hogy a bevágás teljesen hallhatatlan; a meghallgatás a döntő.
-
-Az eredeti összehasonlítás 11,32 s, a szünetes minta 11,84 s, az ugyanezzel és 1,08-as Piper length_scale beállítással készített enyhén lassított minta 12,31 s. A szöveg és a hangprofil közös. A kísérleti minták az `artifacts/piper-prosody` alatt vannak. Az alkalmazás kódja és alapbeállítása változatlan; a felhasználó visszajelzése után választható végleges irány. Az ideiglenes WAV-ok eltávolítva, az MP3-minták és kis mérési jegyzék maradtak. A próbához átmenetileg szükséges ONNX-szerkesztő csomagok kikerültek az aktív környezetből.
-
-
-## Szünetpróba elutasítva
-
-A felhasználó mindkét szünetpróbát gyorsított hatásúnak hallotta, és a korábbi változatot jobbnak ítélte. A próba nem tiszta összehasonlítás az elfogadott korábbi mintával: más szöveg és rögzített véletlenmag is szerepelt, a fonéma-időzítéshez pedig a Piper kiegészítő kimenetét használtuk. Az eredeti modell length_scale alapértéke valóban 1,0; a próbában 1,0 és 1,08 szerepelt. Exportgyorsítás nem történt, de ez nem cáfolja a gyorsított hangzásról adott visszajelzést. A pontos akusztikai ok nincs okságilag elkülönítve.
-
-Az alkalmazás nem kapta meg ezeket a beállításokat, a korábban jobbnak hallott Piper alapváltozat marad. A két elutasított hang, a hozzájuk tartozó kísérleti referencia, jegyzék és saját generáló próbakód eltávolítva. Következő hallásalapú összehasonlításnál ugyanazt a forrást és eredeti generálási alapot kell használni, egyszerre egy tényezőt változtatva.
-
-
-## Elfogadott alap és a gyorsaság magyarázata
-
-A felhasználó 2026-11-10-én a változatlan Piper Imre alapbeállítást egyelőre elfogadhatónak minősítette. A sikertelen szünetpróbák nem kerülnek át az alkalmazásba. A #13 megvalósítása és jóváhagyott takarítása lezárható; a további képességek külön feladatok maradnak.
-
-A telepített Piper 1.8.0 forrásában minden mondat fonémaazonosítóiból egy ONNX-futtatás adja a hangot. A 63,2 MB-os Imre-modell rögzített medium/22 050 Hz változat. Nincs diffúziós lépésszám vagy több számítással magasabb minőséget kérő kapcsoló. A tempó, a ritmus/hanggenerálás véletlenszerűségét vezérlő paraméterek és a hangerő a megszólalást módosítják, nem emelik meg a betanított modell kapacitását. Több CPU-szál vagy GPU-használat önmagában nem jelent jobb hangsúlyozást. A nagyobb MP3-bitrátának a tömörítési veszteségre lehet hatása, a modell kiejtési és prozódiai hibáira nem. A mostani alkalmazásbeállítás és modell változatlan.
-
-Források: [VITS párhuzamos beszédszintézis](https://arxiv.org/abs/2106.06103), [Piper CLI](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/CLI.md), [Imre-modellkártya](https://huggingface.co/rhasspy/piper-voices/blob/cf910fb59f1d79ab3b625a63993a108751c6c25d/hu/hu_HU/imre/medium/MODEL_CARD). A konkrét adaptert, Piper-konfigurációt és telepített motorforrást helyben ellenőriztük, új generálás vagy paramétermódosítás nélkül.
+- [VITS párhuzamos beszédszintézis](https://arxiv.org/abs/2106.06103)
+- [Piper CLI](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/CLI.md)
+- [Imre-modellkártya](https://huggingface.co/rhasspy/piper-voices/blob/cf910fb59f1d79ab3b625a63993a108751c6c25d/hu/hu_HU/imre/medium/MODEL_CARD)

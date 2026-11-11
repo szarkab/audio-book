@@ -1,5 +1,3 @@
 # Kizárólag helyi beszédgenerálás
 
-A felhasználó 2026-11-10-én a kizárólag helyi működést választotta: a magyar beszédgenerálás az M5 MacBookon történik, felhős beszédszolgáltatás nélkül. Ez meghatározza a modellválasztást és az alkalmazás csomagolását; a felhős alternatívák akkor sem részei a megoldásnak, ha jobb hangminőséget kínálnának. A minőséget helyben előállított magyar hangminták meghallgatásával értékeljük.
-
-Az első használatkor egyszeri internetes modellletöltés elfogadott; a letöltés után a generálás internet nélkül működik.
+A magyar beszédgenerálás teljes egészében Apple Silicon Macen fut. A helyi feldolgozás biztosítja, hogy a könyvszöveg és a hanganyag ne igényeljen felhős beszédszolgáltatást; ez a modellválasztás és a csomagolás alapkövetelménye. Az első használatkor egyszeri modellletöltés szükséges, utána a generálás internet nélkül működik.

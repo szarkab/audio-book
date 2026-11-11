@@ -1,36 +1,26 @@
-# Helyi magyar hangpróba
+# OmniVoice hangpróba — módszertan
 
-> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+> Archív műszaki dokumentum, 2026-11-10–11. A jelenlegi működés leírása a [specifikációban](specification.md) található.
 
-A specifikáció: https://github.com/szarkab/audio-book/issues/1
+## Vizsgálati környezet
 
-Ez elkülönített minőségi és teljesítménypróba, nem az alkalmazás kész backendje. A modell, a futtatókörnyezet és a helyben generált hanganyag nem kerül Gitbe.
+Az elkülönített hangpróba Apple Silicon Macen, Python 3.12, MLX Metal GPU és FFmpeg használatával vizsgálta az `mlx-community/OmniVoice-bfloat16` modellt. A rögzített modellrevízió `6119f7072580cc30c3cbdf496269216b03ad9742`.
 
-## Reprodukálás
+A modell előzetes helyi letöltés után, a Hugging Face és Transformers offline módjában futott. A férfi és női jelöltek referenciafelvétel nélküli, leírásból generált hangok voltak. Azonos hullámformából 64 és 96 kbit/s MP3-export készült. A nyers csúcsamplitúdó szükség esetén egyenletes hangerőcsökkentéssel legfeljebb 0,95-re korlátozódott.
 
-Apple Silicon Mac, Python 3.12, uv és FFmpeg szükséges a fejlesztői próbához. A végleges alkalmazás használatának ezek nem felhasználói előfeltételei.
+A mérési jelentés szöveget, hangutasítást, véletlenmagot, modellrevíziót, csomagverziókat, futási időt, MLX-memóriát és fájlméreteket rögzített. Az eredmények a [mérési összefoglalóban](voice-trial-results.md) találhatók.
 
-1. Hozz létre `.venv` környezetet: `uv venv --python 3.12 .venv`.
-2. Telepítsd a próba függőségeit: `uv pip install --python .venv/bin/python -r requirements-trial.lock`. A `requirements-trial.txt` a közvetlen függőséget, a lock fájl az első próba teljes csomaglistáját rögzíti.
-3. A Hugging Face `snapshot_download` függvényével töltsd le a `mlx-community/OmniVoice-bfloat16` modellt a `6119f7072580cc30c3cbdf496269216b03ad9742` revízióból a `.local/models/OmniVoice-bfloat16` mappába.
-4. Futtasd: `.venv/bin/python scripts/voice_trial.py`. A script a Hugging Face és Transformers offline módját állítja be, és a helyi modellből generál Metal GPU-n.
-5. Hallgasd meg az `artifacts/voice-trial` könyvtár férfi és női MP3-mintáit. A WAV az összehasonlításhoz megmarad. Azonos hangból 64 és 96 kbit/s MP3 készül; ezek még nem elfogadott végleges exportbeállítások.
+## Korlátok
 
-Az első futás mérési eredményei és ellenőrzései: [eredményjelentés](voice-trial-results.md).
+A hangtervezés dokumentáltan főként angol és kínai adatokra épült. A magyar hangállandóságot és kiejtést a nem üres hullámforma nem igazolja. A rögzített célidő túl rövid értéke kihagyást vagy beszédhibát okozhat. A rövid minta nem teljes könyves stabilitásmérés.
 
-A mentés a túl magas nyers csúcsokat szükség szerint egyenletes hangerőcsökkentéssel 0,95-re korlátozza; a nyers csúcs és az alkalmazott szorzó a JSON-ban megmarad.
+A kísérleti futtató, a lock fájl, a modellsúlyok és a generált hangok nem részei a jelenlegi projektnek. A módszer történeti dokumentáció; az aktív modell Piper Imre.
 
-## A próba korlátai
+## Források és licenc
 
-A hangok referenciafelvétel nélküli, leírásból generált hangjelöltek, nem előre bizonyított magyar narrátorhangok. A modell dokumentációja szerint a hangtervezés főként angol és kínai adatokra épül; magyarul a stabilitását ellenőrizni kell. A rögzített célidő a próba paramétere, nem a végleges alkalmazás hosszkezelése. Túl rövid célidő beszédhibát vagy kihagyást okozhat; ezt meghallgatással kell kiszűrni.
+- [OmniVoice projekt](https://github.com/k2-fsa/OmniVoice)
+- [Eredeti modellkártya](https://huggingface.co/k2-fsa/OmniVoice): Apache-2.0 kód, CC-BY-NC modellsúlyok.
+- [MLX-Audio integráció](https://github.com/Blaizzy/mlx-audio/tree/main/mlx_audio/tts/models/omnivoice)
+- [MLX-változat](https://huggingface.co/mlx-community/OmniVoice-bfloat16), teljes hangdekódolóval körülbelül 2,04 GB.
 
-A JSON-jelentés a pontos szöveget, hangutasítást, véletlenmagot, modellrevíziót, csomagverziókat, tényleges futási időt, MLX-memóriát és fájlméreteket tartalmazza. A nem üres hullámforma nem bizonyítja a természetességet vagy a szöveghűséget. A hangot a felhasználó fogadja el.
-
-## Elsődleges források és licenc
-
-- Hivatalos modell és Apple Silicon útmutató: https://github.com/k2-fsa/OmniVoice
-- A hivatalos modellkártya szerint a kód Apache-2.0, az előtanított modell CC-BY-NC: https://huggingface.co/k2-fsa/OmniVoice
-- MLX-Audio OmniVoice-integráció: https://github.com/Blaizzy/mlx-audio/tree/main/mlx_audio/tts/models/omnivoice
-- Ajánlott MLX-változat, teljes hangdekódolóval, körülbelül 2,04 GB: https://huggingface.co/mlx-community/OmniVoice-bfloat16
-
-A közösségi átalakítás modellkártyájának Apache-2.0 metaadata nem írja felül az eredeti modellsúlyok nem kereskedelmi feltételét. A mostani próba a megadott saját használati célra készül.
+A közösségi átalakítás Apache-2.0 metaadata nem írja felül az eredeti modellsúlyok nem kereskedelmi feltételét.

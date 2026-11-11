@@ -21,7 +21,7 @@ A teljes automatizált ellenőrzés 33/33 sikeres tesztet tartalmaz valódi Pipe
 
 A teljes MP3 dekódolása sikeres. A memóriaadat a generáló folyamatot jelenti; az átmeneti hangméret nem a teljes gép fizikai lemezfoglalása. A próbafolyamatok hálózat és fejlesztői útvonalak elérése nélkül futottak. A nyers eredményeket az [acceptance-measurements.json](acceptance-measurements.json) tartalmazza.
 
-A generált mérési hangok, részletek, ideiglenes szövegek és naplók nem részei a projektnek; csak a kis mérési jegyzőkönyv maradt meg. A fejlesztői ellenőrző alapértelmezése egyetlen rövid próba, legfeljebb három ismétléssel.
+A repository a mérési jegyzőkönyvet tartalmazza; a generált mérési hangokat és az ideiglenes állományokat nem. A fejlesztői ellenőrző alapértelmezése egyetlen rövid próba, legfeljebb három ismétléssel.
 
 ## Mérési korlátok
 

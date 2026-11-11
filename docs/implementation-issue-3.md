@@ -1,84 +1,59 @@
-# #3 — Hosszú TXT és a felolvasási regresszió javítása
+# OmniVoice hosszúszöveges vizsgálat — #3
 
-> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+> Archív műszaki dokumentum, 2026-11-10–11. A jelenlegi működés leírása a [specifikációban](specification.md) található.
 
-Dátum: 2026-11-10. Feladat: https://github.com/szarkab/audio-book/issues/3
+Kapcsolódó feladat: [#3](https://github.com/szarkab/audio-book/issues/3). A dokumentum az időközben megszüntetett OmniVoice-adapter eredményeit rögzíti.
 
-Állapot: a hosszú feldolgozás és az alkalmazáson belüli lejátszó megvalósult, a tartalmi regresszió visszaellenőrzött. A hosszú hang természetességét és beszélőazonosságát a felhasználó még nem fogadta el; a #3 nyitva marad. Az első hosszú mintát kifejezetten elutasította.
+## Feldolgozás
 
-## Működés
+A hosszúszöveges út teljes UTF-8 TXT-t dolgozott fel, legfeljebb kétmondatos belső egységekben. A részek nyers PCM-fájlban álltak össze, 4096 képkockás blokkokban; a végén egyszeri mono, 24 kHz-es, 96 kbit/s MP3-kódolás történt. A modell feladatonként egyszer töltődött be. Üres vagy levágott hangrész hibát eredményezett.
 
-Egy kiválasztott UTF-8 TXT teljes tartalma automatikusan, egyetlen MP3-ba kerül. Nincs 600 karakteres fájlkorlát, kézi darabolás vagy köztes jóváhagyás. Belsőleg legfeljebb két mondatot tartalmazó egységek készülnek, mondat- és önálló bekezdéshatárokon; a magyar rövidítések, dátumok, névkezdőbetűk és az idézett beszédhez tartozó közlés egyben marad. A szövegrészek összefűzése az eredeti előnézeti szöveget adja.
+A saját lejátszó kézi indítást, szünetet, leállítást, idővonalat és hangerőt biztosított. A fájl betöltése nem indított automatikus lejátszást.
 
-A modell egy feladaton belül egyszer töltődik be. A hangrészek 4096 képkockás blokkokban nyers PCM-fájlhoz kerülnek, nem a teljes könyv hangja halmozódik RAM-ban. A végén egyszer készül el a mono, 24 kHz-es, 96 kbit/s MP3, felülírást kizáró véglegesítéssel. Üres vagy levágott hangrész hibát okoz, csonka könyv nem kap kész állapotot. A százalék a feldolgozott szövegre vonatkozik; az MP3-összeállítás külön állapot.
+## Referenciahang és szöveghűség
 
-A természetes mondatok hossza továbbra is befolyásolja a modell csúcsmemóriáját. Egyetlen szélsőségesen hosszú, mondat- és bekezdéshatár nélküli bemenet erőforráskorlátba ütközhet; nem csonkoljuk észrevétlenül. Teljes könyves átvétel külön feladat.
+A levágott, átirat nélküli referenciahangos konfigurációnál kihagyások, újrakezdések és kiejtési hibák jelentkeztek. A referencia kikapcsolása ugyanazon a bemeneten jelentősen csökkentette az ASR-eltérést, de a hosszú hang beszélőazonossága és hangereje változó maradt.
 
-## Jelzett hiba és reprodukció
+A helyi ASR modellje `mlx-community/whisper-large-v3-turbo-asr-fp16`, revíziója `624c19c9af5603fa73b83bce14d4aeea96156d18`. A körülbelül 1,62 GB-os diagnosztikai modell nem volt futtatási függőség.
 
-A felhasználó az első hosszú mintában kihagyásokat, ismétlésszerű befagyásokat, újrakezdéseket, kitalált szavakat és hibás kiejtést hallott. A Zene alkalmazásban indult el a lejátszás, amelyet a saját ablakunkból nem lehetett vezérelni. A külső lejátszást leállítottuk.
-
-A bevezetett, elfogadott szintetikus mintából képzett hangreferenciás módot különválasztottuk a hosszabb szövegrészektől és az időbecsléstől. Az azonos szövegen végzett valódi M5-regressziós próba az új referencia-kondicionálással hibázott; kizárólag a referencia-kondicionálás kikapcsolásával az eredeti, elfogadott mintával pontosan azonos kimenet állt helyre. A referencia-kódolást és a hozzá tartozó futtatási állományokat ezután eltávolítottuk. Ez a konkrét konfiguráció hibáját igazolja, nem általános állítás a hangklónozásról.
-
-A teljes generálás tartós tartalmi regressziós tesztje: `AUDIOBOOK_REAL_MODEL_TEST=1 .venv/bin/python -m unittest discover -s tests -p test_voice_regression.py -v`. A helyi M5-modell kimenetét helyi ASR-rel összeveti a forrással, legalább 0,97 normalizált karakterhasonlóságot követelve. A korábbi hullámforma-azonossági ellenőrzést a kért kétmondatos bontás és hangerő-kiegyenlítés miatt kiváltotta. Ez nem természetességi pontozó.
-
-## Helyi tartalmi ellenőrzés
-
-A diagnosztikai `scripts/audit_speech.py` helyben futó MLX-Whisperrel átírja a hangot és összeveti a forrással. Modell: `mlx-community/whisper-large-v3-turbo-asr-fp16`, revízió: `624c19c9af5603fa73b83bce14d4aeea96156d18`. A diagnosztikai modell letöltése körülbelül 1,62 GB; nem került Gitbe és nem része az alkalmazás generálási függőségeinek. Nincs felhős átírás.
-
-| Minta | Szószintű szerkesztési eltérés | Karakterszintű eltérés |
+| Konfiguráció | Szószintű szerkesztési eltérés | Karakteres eltérés |
 | --- | --- | --- |
-| Elfogadott, eredeti rövid férfiminta | 5,41% | 0,00% |
-| Elutasított hosszú, referenciahangos kísérlet | 57,29% | 43,59% |
-| Ugyanaz a hosszú szöveg, eredeti hangmóddal | 2,08% | 0,20% |
+| Eredeti rövid férfiminta | 5,41% | 0,00% |
+| Hosszú minta, átirat nélküli referencia | 57,29% | 43,59% |
+| Azonos hosszú szöveg, referencia nélkül | 2,08% | 0,20% |
 
-A karakteres összevetés normalizálja a kis/nagybetűt, írásjeleket és szóközöket; az ékezeteket megtartja. A rövid jó mintán a szószintű eltérés oka a „végiggondolni” / „végig gondolni” egybeírása. A javított hosszú átírásban néhány kis eltérés marad, például „gondosan” / „gondossan”, „moharéteg” / „moharétek” és egy névelő. Ezeket pusztán az ASR alapján nem lehet biztosan kiejtési vagy átírási hibának minősíteni.
+A normalizálás a kis- és nagybetűt, az írásjeleket és a szóközöket egységesítette, az ékezeteket megtartotta. A szószintű mutatót egybeírási eltérések is növelték. Az ASR nem bizonyít természetes prozódiát vagy állandó narrátorhangot.
 
-A diagnosztika ismert jó és ismert rossz mintát egyaránt megkülönböztetett. A hárommintás összehasonlítás hibakódja szándékosan 1, mert tartalmazza az elutasított kontrollt; a javított minta önálló ellenőrzése külön fut. Az ASR nem bizonyít természetes prozódiát vagy hibátlan felolvasást, és nem része az alkalmazás automatikus elfogadási döntésének.
+## Átirattal párosított referencia
 
-## Valódi hosszú próba
+A második konfiguráció 8,07 másodperces, két teljes mondatból álló szintetikus férfireferenciát használt, pontos átirattal. Három külön kétmondatos mintán a helyi ASR nem mutatott szövegeltérést.
 
-A Mac-ablakból 2446 karakteres magyar szövegből 244,04 másodperces MP3 készült, hét automatikus modellbemenettel. A felület 0%-tól a kész állapotig működött. A javított, ugyanilyen hosszú változat is végig elkészült. A teljes fájl dekódolható.
+A 28 MB-os sherpa-onnx CAMPPlus beszélődiagnosztika koszinusz-hasonlóságai:
 
-A javított futás 236,95 másodpercig tartott; más helyi vizsgálatok részben párhuzamosan futottak, ezért nem tiszta sebesség-összehasonlítás az első futással. A folyamat mért csúcs-RSS-e 2 305 277 952 byte; ez nem a teljes rendszer- vagy GPU-memória. Az átmeneti hangfájlok együttes logikai méretének mért maximuma 14 643 501 byte, a kész MP3 2 929 581 byte. A modellállományok és az operációs rendszer háttértára nem részei ennek a tárhelymérésnek.
+| Összevetés | Párosított referencia | Referencia nélküli kontroll |
+| --- | --- | --- |
+| Részek az eredeti férfimintához | 0,945–0,955 | 0,497–0,611 |
+| Részek egymáshoz | 0,959–0,970 | 0,759–0,781 |
 
-A helyi `artifacts/issue3-smoke` mappában a `hosszu-ferfi.mp3` az elutasított kísérlet, a `hosszu-ferfi-javitott.mp3` a visszaállított hangmód eredménye. A `rovid-javitott-proba.mp3` körülbelül 12 másodperces részlet a javított hangból, újratömörítés nélkül. A teljes hangot nem kell végighallgatni a következő rövid minőségi visszajelzéshez.
+A női kontroll és a férfiminta hasonlósága 0,383 volt. Ezek relatív összehasonlító mutatók, nem természetességi százalékok.
 
-## Saját lejátszó
+## Hosszú minták mérései
 
-A külső Zene alkalmazást indító gombot kiváltottuk. A saját lejátszóban Lejátszás/Szünet, Leállítás, idővonal és hangerő található. A kész fájl betöltése nem indít lejátszást. Új forrás vagy generálás megállítja a saját korábbi lejátszást. A Finder-gomb megmaradt.
+| Mért adat | Referencia nélküli változat | Párosított, kétmondatos változat |
+| --- | --- | --- |
+| Bemenet | 2446 karakter | 2446 karakter |
+| Belső részek | 7 | 20 |
+| Generálási idő | 236,95 s | 162,43 s |
+| Folyamat csúcs-RSS | 2 305 277 952 byte | 2 310 963 200 byte |
+| Legnagyobb logikai átmeneti hangméret | 14 643 501 byte | 14 391 501 byte |
+| MP3 mérete | 2 929 581 byte | 2 666 061 byte |
 
-Valódi felületi próba: némított lejátszás elindult, a Szünet gomb megállította, a Leállítás 0:00-ra állította az időt és „Leállítva” állapotot mutatott. A hangerőt visszaállítottuk; az alkalmazás leállított állapotban maradt. A felületről készített rövid MP3 byte-ról byte-ra azonos az eredeti elfogadott mintával.
+Az első változattal részben párhuzamosan más vizsgálatok is futottak, ezért a két idő nem tiszta sebesség-összehasonlítás. Az első GUI-minta hanghossza 244,04 s volt. A párosított változat 1,1× exporttempónál körülbelül 222,07 s hangot adott, 384 várt és 384 felismert szóval; a karakteres eltérés 0,101%, a szószintű 2,60% volt.
 
-## Záró ellenőrzés
+A húsz rész beszélőhasonlósága az eredeti férfimintához minimum 0,907, átlag 0,943; szomszédos részek között minimum 0,897, átlag 0,944. A részenkénti beszédszint-kiegyenlítés 20 ms-os képkockák alapján, csúcskorláttal működött. A részek külön MP3-tömörítés nélkül álltak össze.
 
-A végső teljes futás mind a 20 tesztje sikeres, bekapcsolt valódi M5-modellregresszióval (`AUDIOBOOK_REAL_MODEL_TEST=1`); 18,51 másodperc. A dokumentált Python-típusellenőrzés 6 forrásfájlon sikeres. A Swift-fordítás, a fejlesztői alkalmazás újraépítése és az alkalmazás aláírásának ellenőrzése sikeres. A végső teljes MP3 FFmpeg-dekódolása hibamentes. Nem indult automatikus lejátszás.
+## Hibakezelés és korlátok
 
-### Standards
+A számmal végződő mondatok túl tág dátumfelismerése négymondatos részt eredményezhetett; a javítás azonosítója `de641db`. A dokumentált ellenőrzési kör 20 sikeres tesztet, 6 forrásfájl hibamentes típusellenőrzését és sikeres Swift-fordítást tartalmazott.
 
-A `06cb9fe...79fd350` változások ellenőrzése: 0 dokumentált szabálysértés, 0 javítást igénylő kódszag. A jelzett elavult hullámforma-regressziós tesztleírást pontosítottuk.
-
-### Spec
-
-A review egy P2 hibát talált: a számmal végződő mondatok pontját a bontás mindig dátumként kezelte, ezért négymondatos rész keletkezhetett. A `de641db` javítás teljes generálási regressziós próbája először hibázott, majd sikeres lett; a számos dátumok és címrövidítések továbbra is egyben maradnak. A reviewer visszaellenőrizte a javítást. Fennmaradó igazolt kódhiba: 0.
-
-Összesítés: Standards 0, Spec 0 fennmaradó finding. A hosszú narráció természetességének és hangállandóságának emberi átvétele nyitott; a #3 nincs lezárva.
-
-
-## Újabb felhasználói visszajelzés és véglegesített javítási irány
-
-A felhasználó a referencia nélküli hosszú változatot is elutasította: mondatonként változó hangszínt, hangerőugrást és ismétlésszerű újrakezdéseket jelzett. A jó szövegátírás tehát nem bizonyította a narrátor állandóságát. Kifejezett kérése alapján most legfeljebb kétmondatos belső egységek készülnek, továbbra is egyetlen végső MP3-ba. A tempó módosításához nem futott külön hangolási vagy meghallgatási kísérlet: a CLI/app 1,1× alapértéke egyszerű, hangmagasságot megőrző utófeldolgozás.
-
-A korábbi levágott, átirat nélküli referencia helyett az elfogadott minta teljes első két mondatát használjuk, pontosan párosított átirattal. A referencia 8,07 másodperces, a második mondat végének helyi szóidőzítésével és kis biztonsági szünettel. Nincs automatikus referencia-levágás vagy szüneteltávolítás. A referencia audio-tokenjei és szövege minden célrészhez együtt kerülnek a modellbe. Az időbecslés eredeti kalibrációja maradt; az új, gyorsabb referenciából becsült óra külön próba volt, nem került élesbe.
-
-Három különböző kétmondatos szövegen az átirattal párosított profil mindháromszor 0 szövegeltérést adott a helyi ASR szerint. A külön CAMPPlus beszélődiagnosztika az eredeti férfimintához 0,945–0,955 koszinusz-hasonlóságot adott, a három rész között 0,959–0,970-et. A referencia nélküli kontroll az eredeti férfimintához 0,497–0,611-et, a részek között 0,759–0,781-et adott. A korábbi női kontroll és a férfiminta hasonlósága 0,383 volt. Ezek relatív összehasonlító értékek, nem valószínűségek vagy természetességi százalékok.
-
-A teljes új, 2446 karakteres minta 20 belső részből készült el, 1,1× exporttempóval. A hanghossz körülbelül 222,07 másodperc, a futási idő 162,43 másodperc, a folyamat csúcs-RSS-e 2 310 963 200 byte, az átmeneti hangfájlok legnagyobb összeadott logikai mérete 14 391 501 byte, az MP3 2 666 061 byte. A teljes átírásban 384 várt és 384 felismert szó mellett a karakteres eltérés 0,101%, a szószintű szerkesztési eltérés 2,60% volt. A szószintű mutatót az egybe-/különírási eltérések is növelik.
-
-A teljes hang mind a 20 részének beszélő-összehasonlításában az eredeti férfimintához mért minimum 0,907, átlag 0,943; a szomszédos részek között minimum 0,897, átlag 0,944. Ez az állandóságot támogató összehasonlító bizonyíték, az emberi természetességi átvételt nem helyettesíti.
-
-A részek 20 ms-os képkockáiból becsült aktív beszédszint alapján egységes hangerőt kapnak, konzervatív csúcskorláttal. Egy szándékosan húszszoros szintugrást tartalmazó teljesfolyamat-teszt először hibázott, a javítás után sikeres lett. Nem távolítunk el szavakat vagy hangrészeket, és a részeken belüli dinamika arányai megmaradnak. A feldolgozás veszteségmentes PCM-ben áll össze; nincs részenkénti MP3-újratömörítés.
-
-A helyi diagnosztikai anyagok az `artifacts/issue3-two-sentences` és `artifacts/issue3-final` könyvtárban találhatók, nem kerülnek Gitbe. A beszélődiagnosztika a hivatalos sherpa-onnx kiadás 28 MB-os CAMPPlus modelljét használta; nem része az alkalmazás futtatási függőségeinek. A végső hang a `ketmondatos-ferfi.mp3`. A felhasználó megnyitott mentési ablakát a frissítés közben érintetlenül hagytuk.
-
-A végső hang első körülbelül 21 másodperce újratömörítés nélkül a `artifacts/issue3-final/rovid-proba.mp3` fájlban is elérhető, hogy ne kelljen a teljes mintát végighallgatni.
+A jó ASR- és beszélőhasonlósági értékek ellenére a hangminőség nem bizonyult elegendően stabilnak. Az OmniVoice nem része a jelenlegi Piper-alkalmazásnak. A régi hangminták és diagnosztikai környezetek nem részei az aktív projektnek.

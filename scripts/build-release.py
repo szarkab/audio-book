@@ -77,8 +77,8 @@ for name in ["piper-tts", "onnxruntime", "numpy", "certifi", "flatbuffers", "pro
     "Python: PSF. ONNX Runtime: MIT. NumPy: BSD and its bundled component notices. certifi: MPL-2.0.\n"
     "The DMG Sources directory supplies the application snapshot, build scripts, and the pinned copyleft component archives. "
     "The remaining runtime notices are included here.\n"
-    "This is a personal preview. No application-source redistribution license has been selected yet; "
-    "a public release requires that separate decision. Third-party licenses retain their own terms.\n")
+    "No separate license is specified for the application source. "
+    "Third-party licenses retain their own terms.\n")
 shutil.copy2(ROOT / "packaging/PYTHON-LICENSE.txt", licenses / "PYTHON-LICENSE.txt")
 for filename, component in [("ffmpeg-9.0.2.tar.xz", "FFmpeg"), ("lame-3.100.tar.gz", "LAME"),
                             ("espeak-ng-724808c.tar.gz", "eSpeak")]:
@@ -106,7 +106,7 @@ with tempfile.TemporaryDirectory(dir=artifacts, prefix=".dmg-stage-") as tempora
         "Hangoskönyv 0.3.0 — személyes előzetes\n\nApple Silicon (M1–M5), macOS 26 vagy újabb.\n"
         "Húzd a HangosKonyv alkalmazást az Applications mappába. Első alkalommal az appból tölthető le "
         "a 63,2 MB-os Imre-hang, utána a TXT → MP3 teljesen offline működik.\n\n"
-        "Ez a csomag ad-hoc aláírást kapott, Apple Developer ID és notarizáció nélkül. "
+        "A csomag ad-hoc aláírású, Apple Developer ID és notarizáció nélkül. "
         "Internetről letöltve a Gatekeeper blokkolhatja. Ez nem notarizált nyilvános kiadás.\n")
     sources = stage / "Sources"
     sources.mkdir()

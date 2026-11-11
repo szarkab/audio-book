@@ -1,45 +1,43 @@
-# Önálló DMG és arculat — #7
+# Önálló macOS-csomag — #7
 
-> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+> Archív műszaki dokumentum, 2026-11-10–11. A jelenlegi működés leírása a [specifikációban](specification.md) található.
 
-2026-11-11. Személyes előzetes: Hangoskönyv 0.3.0, ARM64, macOS 26 vagy újabb. A projekt továbbra is privát. A hangmodell és az elfogadott alapértékek változatlanok.
+Kapcsolódó feladat: [#7](https://github.com/szarkab/audio-book/issues/7). Verzió: 0.3.0, ARM64, macOS 26 vagy újabb.
 
-## Csomag
+## Csomagtartalom
 
-A SwiftUI alkalmazás saját, PyInstaller 6.22.3-mal összegyűjtött Python 3.12/Piper 1.8.0/ONNX Runtime futtatót, CA-tanúsítványokat és statikus, audio-only FFmpeg 9.0.2 + LAME 3.100 kódolót tartalmaz. A kódoló csak rendszerkönyvtárakra hivatkozik; a Homebrew kizárólag buildfüggőség. A kiadási appban nincs fejlesztői gyökérmappa vagy virtuális környezetre visszaeső út. A naplók a felhasználó Library/Logs/HangosKonyv mappájába kerülnek.
+A SwiftUI alkalmazás Python 3.12, Piper 1.8.0, ONNX Runtime és CA-tanúsítványok csomagolt példányát tartalmazza, PyInstaller 6.22.3-mal. A hangkódoló statikus, audio-only FFmpeg 9.0.2 és LAME 3.100; csak rendszerkönyvtárakra hivatkozik. A telepített app nem igényel Homebrew-t, külön Pythont vagy projektmappát.
 
-A DMG-ben Applications-hivatkozás, magyar telepítési szöveg, saját appikon és forráscsomagok vannak. A külső komponensek licencszövegei az app Resources/Licenses mappájában is szerepelnek. A modell továbbra is külön első letöltés, rögzített revízióval és ellenőrzőösszegekkel. A kiadás minimális rendszere macOS 26, a statikus buildfüggőség tényleges minimumához igazítva; nem állítunk macOS 14-es kiadási támogatást.
+A DMG Applications-hivatkozást, magyar telepítési leírást, alkalmazásikont és forráscsomagokat tartalmaz. A külső licencszövegek az alkalmazás `Resources/Licenses` mappájában is elérhetők. A saját alkalmazásforráshoz nincs külön licenc megadva. A Piper Imre modell első használatkor, külön letöltéssel érhető el.
 
-A saját alkalmazásforrás nyilvános terjesztési licence még nincs kiválasztva. Ez személyes, privát előzetes; nem kész nyilvános terjesztés. A külső licencek és azok rögzített forrásai mellékeltek.
+A macOS 26-os rendszerkövetelményt a statikus buildfüggőség minimuma határozza meg. A munkanaplók helye `~/Library/Logs/HangosKonyv`.
 
-## Arculat
+## Megjelenés
 
-A könyv és arany hanghullám kék hátteren jelenik meg. A vektoros forrás a make-icon.swift; a PNG és a macOS ICNS méretsor ebből áll elő. Az appon a CFBundleIconFile erre mutat, az ablakban a rendszer által feloldott alkalmazásikon jelenik meg. A saját kék kiemelés és modellállapot-panel világos módban is olvasható.
+A könyv–hanghullám ikon kék hátteret és arany hullámvonalat használ. Vektoros forrása a `scripts/make-icon.swift`; ebből készül a PNG és a macOS ICNS méretsor. A `CFBundleIconFile` a mellékelt ikonra mutat. Az ikon megjelenése az alkalmazásablakban, a Finderben és a Dockban ellenőrzött.
 
-A telepített alkalmazásablakban az ikon vizuálisan ellenőrzött. A Dock külön gépi felületi olvasása időtúllépéssel megállt. A felhasználó 2026-11-11-én megerősítette: „Igen, mindkét helyen rendben” a Finder és a Dock saját ikonjára. A vizuális átvétel ezzel teljesült.
+## Csomagellenőrzés
 
-## Ellenőrzés
+- 33/33 sikeres teszt valódi Piperrel és a telepített alkalmazással (6,965 s); hibamentes mypy 8 forrásfájlon.
+- Sikeres Swift release-build, mély és szigorú aláírás-ellenőrzés.
+- Sikeres teljes build friss, `.local` nélküli forrásexportból, rögzített és ellenőrzött forrásarchívumokkal.
+- Telepítés a felcsatolt DMG-ből, modellletöltés üres modellkönyvtárba, majd sikeres natív TXT → MP3 generálás.
+- Sikeres generálás a próbafolyamat projekt-, Homebrew-, külső Python- és hálózati hozzáférésének tiltása mellett. A tiltásokat külön hozzáférési próbák ellenőrizték.
 
-- A legmagasabb fájl → MP3 teszthatáron előbb hiányzó önálló futtató miatt hibázó csomagpróba készült. Az első elkészült csomagban a minimális FFmpeg-ből hiányzó PCM-demuxer ugyanezen a próbán derült ki. Javítás után a tényleges csomagolt futtató külső Python/Homebrew PATH nélkül sikeresen dolgozik.
-- A végső teljes csomag 33/33 tesztje valódi Piperrel és a ~/Applications alá telepített appal sikeres (6,965 s). mypy: 8 forrásfájl hibamentes, tiszta elemzéssel. A Swift release-build, a mély/szigorú aláírás-ellenőrzés és git diff --check sikeres.
-- Friss, .local nélküli forrásexportból, csak az előkészített buildeszköz-környezettel, a teljes önálló app-build sikeresen lefutott. Az összes forrásarchívum ténylegesen újra beszerzésre és ellenőrzésre került.
-- A DMG ténylegesen felcsatolva, az app onnan a felhasználó Applications mappájába másolva. Új modellmappával a telepített ablak hiányzó állapotot mutatott; az Imre-hang letöltése gombra valódi beszerzés és kész állapot következett.
-- Újraindítás után a próbafolyamat nem olvashatta a projektet, a Homebrew-t vagy a külső uv-Pythont, és a hálózat is tiltott volt. A tiltásokat külön cat/Homebrew-próba is visszaigazolta. A telepített app így is előnézetet és egy MP3-at készített a projekten kívüli TXT-ből.
-- Az offline natív minta 4,168 s hang / 51020 byte MP3; 0,741 s futás; 218267648 byte folyamatcsúcs-RSS; 400206 byte átmeneti hangméret. A mellékelt kódoló teljesen dekódolja. A saját lejátszó leállított, 0:00 állapotban maradt, hang nem indult automatikusan.
-- A telepített app hat beállítása az elfogadott 1× / 0,333 / 0,5 / 1× / normalizálás bekapcsolva / 0 s értékekkel megjelent.
+| Offline csomagpróba | Eredmény |
+| --- | --- |
+| Hanghossz | 4,168 s |
+| MP3 mérete | 51 020 byte |
+| Futási idő | 0,741 s |
+| Folyamat csúcs-RSS | 218 267 648 byte |
+| Logikai átmeneti hangméret | 400 206 byte |
 
-## Aláírás és Gatekeeper
+A mellékelt kódoló a teljes MP3-at hibamentesen dekódolta. A lejátszó leállított állapotban maradt. Mind a hat beállítás a dokumentált alapértékkel jelent meg.
 
-A gépen 0 használható kódaláíró identitás van. Az app és a mellékelt Mach-O kód ad-hoc aláírást kap, ami a helyi futást lehetővé teszi. A tényleges spctl --assess eredménye rejected; Developer ID és Apple-notarizáció nincs. Ez a dokumentált előzetes nem állít akadálymentes internetes telepítést. Nem kapcsoltuk ki a Gatekeepert, és nem töröltünk karanténjelzést. Az Apple-fejlesztői hozzáférés és a nyilvános terjesztési döntések későbbi feladatok.
+A build-előkészítés könyvtár- és licencforrás-sorrendjének hibáját a `c31444e` javítja. A minimális FFmpeg-konfiguráció tartalmazza a csomagpróbához szükséges PCM-demuxert.
 
-## Standards
+## Aláírás
 
-Alap: 324aeeb. Egy P2 build-bootstrap hibát talált a review: a munkamappa és licencforrások létrehozásuk/beszerzésük előtt kerültek használatba. A c31444e előrehozta a mkdir és a teljes ellenőrzött forrásbeszerzés lépéseit. Tiszta forrásból igazolt, az újraellenőrzésben 0 nyitott finding.
+Az alkalmazás és a mellékelt Mach-O állományok ad-hoc aláírásúak. Developer ID és Apple-notarizáció nincs; a `spctl --assess` eredménye `rejected`. Az első indítás ezért külön macOS-engedélyezést igényelhet. A telepítési lépések a [README-ben](../README.md) találhatók.
 
-## Spec
-
-Ugyanez az előkészítési sorrend sértette a reprodukálható build feltételét; javítva. Az újraellenőrzés 0 fennmaradó Spec-kódhibát talált. A Dock/Finder végső vizuális visszaigazolását a felhasználó megadta; a Gatekeeper/notarizáció korlátja kifejezetten dokumentált.
-
-## Átadás
-
-A végleges DMG és SHA-256 melléklete a privát [v0.3.0-preview kiadásban](https://github.com/szarkab/audio-book/releases/tag/v0.3.0-preview) elérhető. A végleges csomag újraépítése után a csomagolt MP3-próba ismét sikeres. Az app a végleges DMG-ből a felhasználó Applications mappájába frissítve és szokásosan újranyitva, kész modellel. A saját ideiglenes app-, modell- és buildmásolatok eltávolítva; a tartós modell és a könyvforrások megmaradtak.
+A DMG és a SHA-256 melléklet a [v0.3.0-preview kiadásban](https://github.com/szarkab/audio-book/releases/tag/v0.3.0-preview) érhető el.
