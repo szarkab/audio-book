@@ -36,7 +36,7 @@ struct ModelDownloadView: View {
             .font(.caption).foregroundStyle(.secondary)
         }
         .padding(12)
-        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
+        .background(AppBrand.accent.opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
     }
 
     private func bytes(_ count: Int) -> String {

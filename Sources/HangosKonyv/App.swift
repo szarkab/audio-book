@@ -174,6 +174,10 @@ struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .top) {
+                if let icon = NSImage(named: NSImage.applicationIconName) {
+                    Image(nsImage: icon).resizable().frame(width: 56, height: 56)
+                        .accessibilityHidden(true)
+                }
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Hangoskönyv").font(.largeTitle.bold())
                     Text("Magyar szövegből nyugodt, férfihangos felolvasás.")
@@ -241,6 +245,7 @@ struct ContentView: View {
             Text("Piper Imre · Magyar férfihang · MP3")
                 .font(.caption).foregroundStyle(.secondary)
         }
+        .tint(AppBrand.accent)
         .padding(28)
         .frame(minWidth: 760, minHeight: 800)
         .task { await model.refreshModel() }

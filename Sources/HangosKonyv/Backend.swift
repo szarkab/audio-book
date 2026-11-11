@@ -21,30 +21,39 @@ struct WorkerFailure: LocalizedError {
 }
 
 struct Backend: Sendable {
-    // Development launch only. The standalone bundle is a later ticket.
-    let projectRoot: URL = ProcessInfo.processInfo.environment["AUDIOBOOK_PROJECT_ROOT"]
-        .map { URL(fileURLWithPath: $0) }
-        ?? URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-
     func run(
         arguments: [String],
         onEvent: @escaping @MainActor @Sendable (WorkerEvent) -> Void
     ) async throws {
-        let root = projectRoot
+        let resources = Bundle.main.resourceURL
+        let bundledWorker = resources?.appendingPathComponent("worker/HangosKonyvWorker")
+        let developmentRoot = (Bundle.main.object(forInfoDictionaryKey: "AUDIOBOOKDevelopmentRoot") as? String)
+            .map { URL(fileURLWithPath: $0) }
         try await Task.detached(priority: .userInitiated) {
             let process = Process()
-            process.executableURL = root.appendingPathComponent(".venv/bin/python").resolvingSymlinksInPath()
-            process.arguments = ["-u", "-m", "audiobook"] + arguments
-            process.currentDirectoryURL = root
             var environment = ProcessInfo.processInfo.environment
-            environment["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+            if let bundledWorker, FileManager.default.isExecutableFile(atPath: bundledWorker.path) {
+                process.executableURL = bundledWorker
+                process.arguments = arguments
+                process.currentDirectoryURL = FileManager.default.temporaryDirectory
+                for key in ["PYTHONPATH", "PYTHONHOME", "DYLD_LIBRARY_PATH", "DYLD_FRAMEWORK_PATH"] {
+                    environment.removeValue(forKey: key)
+                }
+                environment["PATH"] = "/usr/bin:/bin"
+            } else if let root = developmentRoot {
+                process.executableURL = root.appendingPathComponent(".venv/bin/python").resolvingSymlinksInPath()
+                process.arguments = ["-u", "-m", "audiobook"] + arguments
+                process.currentDirectoryURL = root
+                environment["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+                environment["PYTHONPATH"] = root.path + ":" + root.appendingPathComponent(".venv/lib/python3.12/site-packages").path
+            } else {
+                throw WorkerFailure(message: "Hiányzik az alkalmazás futtatója. Telepítsd újra a DMG-ből.")
+            }
             environment["PYTHONUNBUFFERED"] = "1"
-            environment["PYTHONPATH"] = root.path + ":" + root.appendingPathComponent(".venv/lib/python3.12/site-packages").path
             process.environment = environment
             let pipe = Pipe()
             process.standardOutput = pipe
-            let logs = root.appendingPathComponent(".local/logs")
+            let logs = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/HangosKonyv")
             try FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
             let logURL = logs.appendingPathComponent("worker-\(UUID().uuidString).log")
             FileManager.default.createFile(atPath: logURL.path, contents: nil)
@@ -54,7 +63,7 @@ struct Backend: Sendable {
             do {
                 try process.run()
             } catch {
-                throw WorkerFailure(message: "A helyi futtatókörnyezet nem indítható. Ellenőrizd a fejlesztői telepítést.")
+                throw WorkerFailure(message: "Az alkalmazás futtatója nem indítható. Telepítsd újra a DMG-ből.")
             }
             var pending = Data()
             var terminalEvent = false

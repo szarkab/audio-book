@@ -24,10 +24,15 @@ with (app / 'Contents/Info.plist').open('wb') as stream:
         'CFBundlePackageType': 'APPL',
         'CFBundleShortVersionString': '0.2.0',
         'CFBundleVersion': '2',
+        'CFBundleIconFile': 'AppIcon',
+        'AUDIOBOOKDevelopmentRoot': str(root),
         'LSMinimumSystemVersion': '14.0',
         'NSHighResolutionCapable': True,
         'NSDocumentsFolderUsageDescription': 'A kiválasztott szöveg és a helyi Piper Imre modell eléréséhez.',
     }, stream)
+resources = app / 'Contents/Resources'
+resources.mkdir(parents=True, exist_ok=True)
+shutil.copy2(root / 'assets/brand/AppIcon.icns', resources / 'AppIcon.icns')
 print(app)
 PY
 codesign --force --sign - "$TASK_ROOT/artifacts/HangosKonyv.app"
