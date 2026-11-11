@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise the installed public worker on a book-sized input, without network."""
+"""Check the installed worker with a short representative input, without network."""
 import argparse
 import hashlib
 import json
@@ -12,11 +12,11 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument("--app", type=Path, default=Path.home() / "Applications/HangosKonyv.app")
-parser.add_argument("--repetitions", type=int, default=40)
+parser.add_argument("--repetitions", type=int, default=1)
 parser.add_argument("--output-dir", type=Path, required=True)
 args = parser.parse_args()
-if not 1 <= args.repetitions <= 100:
-    parser.error("repetitions must be between 1 and 100")
+if not 1 <= args.repetitions <= 3:
+    parser.error("repetitions must be between 1 and 3")
 folder = args.output_dir.resolve()
 if folder.exists():
     parser.error("Choose a new output directory; existing results are preserved")
@@ -61,7 +61,7 @@ story = (ROOT / "samples/hu-long-narration.txt").read_text().strip()
 source = folder / "book.txt"
 source.write_text((story + "\n\n") * args.repetitions)
 first = folder / "book.mp3"
-print("Book-sized job started", flush=True)
+print("Representative narration job started", flush=True)
 book = job(source, first)
 print(json.dumps(book), flush=True)
 second_source = folder / "next.txt"

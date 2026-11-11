@@ -1,0 +1,45 @@
+{
+  "app_version": "0.3.0-preview",
+  "repetitions": 40,
+  "network_and_development_paths_denied": true,
+  "book": {
+    "source_characters": 97918,
+    "source_digest": "1ad471c9600a6580d97b5ea915ea07a34440a8aff1c5473fa9c457d4f46625c7",
+    "mp3_sha256": "657d2c7ed69c87dfc98872107c036c3dcc5825c90d19b94e8cfa62f8831931b4",
+    "audio_seconds": 6162.859625,
+    "elapsed_seconds": 150.80998366698623,
+    "peak_process_rss_bytes": 493568000,
+    "peak_temporary_audio_bytes": 369772538,
+    "mp3_bytes": 73955276
+  },
+  "next_job": {
+    "source_characters": 74,
+    "source_digest": "ebc0ef64a3b01297a537ed74dbf36c451c7b437782c2e1ad32d9d9a3b7ef5da8",
+    "mp3_sha256": "a2347693a893fb46ac344b1c698e5c038c72f6ad6166635c0b7c960ffe1b959a",
+    "audio_seconds": 5.259333333333333,
+    "elapsed_seconds": 0.5855690001044422,
+    "peak_process_rss_bytes": 248872960,
+    "peak_temporary_audio_bytes": 504974,
+    "mp3_bytes": 64268
+  },
+  "first_mp3_preserved": true,
+  "full_mp3_decode": "passed",
+  "excerpts": [
+    {
+      "label": "eleje",
+      "start_seconds": 0.0,
+      "path": "eleje.mp3"
+    },
+    {
+      "label": "kozepe",
+      "start_seconds": 3081.4298125,
+      "path": "kozepe.mp3"
+    },
+    {
+      "label": "vege",
+      "start_seconds": 6154.859625,
+      "path": "vege.mp3"
+    }
+  ],
+  "speech_content_and_naturalness": "Requires human listening; progress and decoding do not prove spoken accuracy"
+}

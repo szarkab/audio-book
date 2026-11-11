@@ -16,7 +16,7 @@ A biztos sorszámos alakok 1–100 között betűs alakban jelennek meg az előn
 
 A teljes fájl köztes jóváhagyás nélkül feldolgozódik. A rövid belső egységek veszteségmentes PCM-ben állnak össze a lemezen, majd egyszer készül az MP3. A forrásfájl változatlan marad.
 
-A modell és a munkanaplók a felhasználó Library mappájában vannak, a forrásprojekttől függetlenül. A sorszámkiejtés rövid mintáját a felhasználó elfogadta. A Markdown-beolvasás, generálási szüneteltetés/tartós folytatás és a böngészős átvétel nincs a hatókörben. A végső teljes könyves átvétel külön feladat.
+A modell és a munkanaplók a felhasználó Library mappájában vannak, a forrásprojekttől függetlenül. A sorszámkiejtés rövid mintáját a felhasználó elfogadta. A Markdown-beolvasás, generálási szüneteltetés/tartós folytatás és a böngészős átvétel nincs a hatókörben. A személyes használatú változat [záró átvétele megtörtént](docs/final-acceptance.md), a felhasználó saját hosszú tesztjével és 33 sikeres automatizált próbával.
 
 ## Fejlesztői előkészítés
 
