@@ -26,7 +26,7 @@ A c1ed2aa...HEAD ellenőrzés 0 dokumentált szabálysértést talált. Egy kül
 
 Egy P2 téves átírás javítva: „A darabszám 1. Próba következik.” és „Az eredmény 2. Hely már nincs.” változatlan marad. A kisbetűs biztos alakok működnek. Újraellenőrzés: 0 nyitott kódhiba.
 
-A rövid sorszámminta emberi meghallgatása még nyitott: a #12 nem zárható teljesítettként a felhasználó visszajelzése előtt.
+A felhasználó 2026-11-11-én visszajelezte: „sorszámminta is jól sikerült”. A rövid valódi minta kiejtésének emberi elfogadása megtörtént; a #12 lezárható.
 
 ## Hosszú hang auditja — #11 és #3
 

@@ -12,7 +12,7 @@ A biztos sorszámos alakok 1–100 között betűs alakban jelennek meg az előn
 
 A teljes fájl köztes jóváhagyás nélkül feldolgozódik. A rövid belső egységek veszteségmentes PCM-ben állnak össze a lemezen, majd egyszer készül az MP3. A forrásfájl változatlan marad.
 
-Ez fejlesztői alkalmazás: a projekt Python-környezetét, helyi modelljét és FFmpeg-jét használja. A további feladatok a sorszámkiejtés meghallgatásos elfogadása, valamint az önálló DMG saját arculattal, színekkel és appikonnal. A végső átvétel a telepített helyi alkalmazásban történik. A felhasználó kérésére az MD-beolvasás és a generálás szüneteltetése/tartós folytatása kikerült a tervből; böngészős felület vagy böngészős próba nem szükséges.
+Ez fejlesztői alkalmazás: a projekt Python-környezetét, helyi modelljét és FFmpeg-jét használja. A sorszámkiejtés rövid mintáját a felhasználó elfogadta. A következő feladat az önálló DMG saját arculattal, színekkel és appikonnal. A végső átvétel a telepített helyi alkalmazásban történik. A felhasználó kérésére az MD-beolvasás és a generálás szüneteltetése/tartós folytatása kikerült a tervből; böngészős felület vagy böngészős próba nem szükséges.
 
 ## Fejlesztői előkészítés
 
