@@ -8,7 +8,7 @@ Az önálló személyes előzetes a [GitHub-kiadásból](https://github.com/szar
 
 A csomag saját könyv–hanghullám ikont és kék–arany arculatot kapott. A kész hang kizárólag a Lejátszás gombra indul; szüneteltethető, leállítható és tekerhető. Meglévő MP3-at nem ír felül.
 
-A csomag ad-hoc aláírású, Apple Developer ID és notarizáció nélkül. Internetről letöltve a macOS Gatekeeper blokkolhatja; ez nem notarizált nyilvános kiadás. A projekt továbbra is privát, az alkalmazás saját forrásának nyilvános terjesztési licence még külön döntés. A külső komponensek licencszövegei az appban, a rögzített copyleft forráscsomagok és az alkalmazás forráspillanatképe a DMG Sources mappájában vannak.
+A csomag ad-hoc aláírású, Apple Developer ID és notarizáció nélkül. Internetről letöltve a macOS Gatekeeper blokkolhatja; ez nem notarizált nyilvános kiadás. A projekt jelenleg privát, nyilvános alkalmazáskiadás nem cél. A felhasználó személyes használatra elfogadta a macOS figyelmeztetését; az Apple-notarizáció nem hátralévő implementációs feladat. A külső komponensek licencszövegei az appban, a rögzített copyleft forráscsomagok és az alkalmazás forráspillanatképe a DMG Sources mappájában vannak. A saját, megbízható példány első indítása után az engedélyezés az **Adatvédelem és biztonság → Megnyitás mindenképpen** lehetőséggel történhet; [Apple útmutató](https://support.apple.com/en-us/102445).
 
 A **Felolvasás beállításai…** gombbal MP3-készítés előtt állítható a tempó, a ritmus és hang változatossága, a kimeneti hangerő, a hangerő-normalizálás és az extra mondatszünet. A kimeneti hangerő a mentett fájlt módosítja, a lejátszó hangerejétől függetlenül. A csúcskorlát megakadályozza a túlvezérlést. Az **Elfogadott alapértékek visszaállítása** minden értéket visszaállít: 1× tempó, 0,333 ritmus, 0,5 hangváltozatosság, 1× hangerő, bekapcsolt normalizálás, 0 s extra szünet. A választás az app bezárásáig marad meg, és a futó generálás alatt nem módosítható. Külön hangsúlyozás-szabályzó nincs.
 
@@ -63,3 +63,5 @@ A lecserélt nagy modellek és külön próbakörnyezetek kikerültek az aktív 
 - [Imre-modellkártya](https://huggingface.co/rhasspy/piper-voices/blob/cf910fb59f1d79ab3b625a63993a108751c6c25d/hu/hu_HU/imre/medium/MODEL_CARD) — CC0 adathalmaz
 
 A korábbi modellkísérletek dokumentumai történeti feljegyzések; az aktuális alkalmazás kizárólag Piper Imrét használ.
+
+A GitHub és az érzékenyadat-ellenőrzés összefoglalója: [ellenőrzési jegyzőkönyv](docs/security-check.md).
