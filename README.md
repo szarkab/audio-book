@@ -4,7 +4,7 @@ Magyar UTF-8 TXT-fájlok helyi felolvasása az elfogadott **Piper Imre** férfih
 
 ## Telepítés és indítás
 
-Az önálló személyes előzetes az `artifacts/HangosKonyv-0.3.0-arm64.dmg`. Apple Silicon Mac és macOS 26 vagy újabb szükséges. A DMG-ben lévő HangosKonyv app az Applications mappába másolható; saját Python, Homebrew vagy projektmappa nem szükséges a futtatásához. Első használatkor az **Imre-hang letöltése** gomb beszerzi az ellenőrzött 63,2 MB-os modellt, legalább 128 MB szabad hely mellett. A kész modell után a TXT → MP3 generálás offline működik.
+Az önálló személyes előzetes a [GitHub-kiadásból](https://github.com/szarkab/audio-book/releases/tag/v0.3.0-preview) tölthető le, a privát projekthez szükséges hozzáféréssel. Helyi DMG: `artifacts/HangosKonyv-0.3.0-arm64.dmg`. Az ellenőrzött példány a felhasználó `~/Applications/HangosKonyv.app` helyére telepítve. Apple Silicon Mac és macOS 26 vagy újabb szükséges. A DMG-ben lévő HangosKonyv app az Applications mappába másolható; saját Python, Homebrew vagy projektmappa nem szükséges a futtatásához. Első használatkor az **Imre-hang letöltése** gomb beszerzi az ellenőrzött 63,2 MB-os modellt, legalább 128 MB szabad hely mellett. A kész modell után a TXT → MP3 generálás offline működik.
 
 A csomag saját könyv–hanghullám ikont és kék–arany arculatot kapott. A kész hang kizárólag a Lejátszás gombra indul; szüneteltethető, leállítható és tekerhető. Meglévő MP3-at nem ír felül.
 

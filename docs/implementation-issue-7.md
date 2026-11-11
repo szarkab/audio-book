@@ -37,3 +37,7 @@ Alap: 324aeeb. Egy P2 build-bootstrap hibát talált a review: a munkamappa és 
 ## Spec
 
 Ugyanez az előkészítési sorrend sértette a reprodukálható build feltételét; javítva. Az újraellenőrzés 0 fennmaradó Spec-kódhibát talált. A Dock/Finder végső vizuális visszaigazolása nyitott; a Gatekeeper/notarizáció korlátja kifejezetten dokumentált.
+
+## Átadás
+
+A végleges DMG és SHA-256 melléklete a privát [v0.3.0-preview kiadásban](https://github.com/szarkab/audio-book/releases/tag/v0.3.0-preview) elérhető. A végleges csomag újraépítése után a csomagolt MP3-próba ismét sikeres. Az app a végleges DMG-ből a felhasználó Applications mappájába frissítve és szokásosan újranyitva, kész modellel. A saját ideiglenes app-, modell- és buildmásolatok eltávolítva; a tartós modell és a könyvforrások megmaradtak.
