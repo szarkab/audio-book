@@ -21,6 +21,15 @@ args = parser.parse_args()
 def run(*command, **kwargs):
     subprocess.run([str(item) for item in command], cwd=ROOT, check=True, **kwargs)
 
+(ROOT / ".local/build-sources").mkdir(parents=True, exist_ok=True)
+manifest = json.loads((ROOT / "packaging/third-party-sources.json").read_text())
+for item in manifest:
+    archive = ROOT / ".local/build-sources" / item["name"]
+    if not archive.exists():
+        run("curl", "--fail", "--location", "--retry", "3", item["url"], "--output", archive)
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != item["sha256"]:
+        raise SystemExit(f"Source checksum mismatch: {item['name']}")
+
 run("swift", "build", "-c", "release")
 with (ROOT / ".local/ffmpeg-build.log").open("w") as log:
     run(sys.executable, "scripts/build-ffmpeg.py", stdout=log, stderr=subprocess.STDOUT)
@@ -89,13 +98,6 @@ print(app)
 if args.app_only:
     raise SystemExit(0)
 
-manifest = json.loads((ROOT / "packaging/third-party-sources.json").read_text())
-for item in manifest:
-    archive = ROOT / ".local/build-sources" / item["name"]
-    if not archive.exists():
-        run("curl", "--fail", "--location", "--retry", "3", item["url"], "--output", archive)
-    if hashlib.sha256(archive.read_bytes()).hexdigest() != item["sha256"]:
-        raise SystemExit(f"Source checksum mismatch: {item['name']}")
 with tempfile.TemporaryDirectory(dir=artifacts, prefix=".dmg-stage-") as temporary:
     stage = Path(temporary)
     shutil.copytree(app, stage / app.name, symlinks=True)
