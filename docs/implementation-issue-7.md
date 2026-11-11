@@ -14,7 +14,7 @@ A saját alkalmazásforrás nyilvános terjesztési licence még nincs kiválasz
 
 A könyv és arany hanghullám kék hátteren jelenik meg. A vektoros forrás a make-icon.swift; a PNG és a macOS ICNS méretsor ebből áll elő. Az appon a CFBundleIconFile erre mutat, az ablakban a rendszer által feloldott alkalmazásikon jelenik meg. A saját kék kiemelés és modellállapot-panel világos módban is olvasható.
 
-A telepített alkalmazásablakban az ikon vizuálisan ellenőrzött. A Dock külön felületi olvasása a vezérlő időtúllépése miatt nem adott eredményt; erre nincs külön sikeres kézi ellenőrzési állítás. A Finder/Dock megjelenés végső felhasználói visszaigazolása nyitott marad.
+A telepített alkalmazásablakban az ikon vizuálisan ellenőrzött. A Dock külön gépi felületi olvasása időtúllépéssel megállt. A felhasználó 2026-11-11-én megerősítette: „Igen, mindkét helyen rendben” a Finder és a Dock saját ikonjára. A vizuális átvétel ezzel teljesült.
 
 ## Ellenőrzés
 
@@ -36,7 +36,7 @@ Alap: 324aeeb. Egy P2 build-bootstrap hibát talált a review: a munkamappa és 
 
 ## Spec
 
-Ugyanez az előkészítési sorrend sértette a reprodukálható build feltételét; javítva. Az újraellenőrzés 0 fennmaradó Spec-kódhibát talált. A Dock/Finder végső vizuális visszaigazolása nyitott; a Gatekeeper/notarizáció korlátja kifejezetten dokumentált.
+Ugyanez az előkészítési sorrend sértette a reprodukálható build feltételét; javítva. Az újraellenőrzés 0 fennmaradó Spec-kódhibát talált. A Dock/Finder végső vizuális visszaigazolását a felhasználó megadta; a Gatekeeper/notarizáció korlátja kifejezetten dokumentált.
 
 ## Átadás
 
