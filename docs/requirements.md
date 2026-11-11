@@ -1,11 +1,14 @@
-# Egyeztetett követelmények
+# Követelmények
 
-Frissítve: 2026-11-10, a felhasználó legutóbbi egyszerűsítése szerint.
+A Hangoskönyv magyar UTF-8 TXT-fájlokból egyetlen MP3-at készítő, helyben futó macOS-alkalmazás. A részletes működést a [specifikáció](specification.md) tartalmazza.
 
-A részletes követelmények és a megvalósítási terv forrása a [specifikáció](specification.md), a GitHub #1 aktuális tartalmával egyezően.
+- Apple Silicon Mac, macOS 26 vagy újabb; önálló DMG-telepítő.
+- Kizárólag Piper Imre magyar férfihang, felhős beszédszolgáltatás nélkül.
+- A modell egyszeri letöltése az alkalmazásból; ezt követően offline generálás.
+- Teljes fájlok és könyvhosszúságú szövegek feldolgozása, egy fájlból egy MP3.
+- Szövegelőnézet, konzervatív sorszám-előkészítés, változatlan forrásfájl.
+- Hat felolvasási beállítás és visszaállítható alapértékek.
+- Kézzel indítható saját lejátszó, felülírás elleni védelem.
+- Könyv–hanghullám alkalmazásikon és kék–arany színvilág.
 
-Egy kiválasztott magyar TXT-fájl egy teljes generálási feladat, amely köztes jóváhagyás nélkül egyetlen MP3-at készít. A felhasználó a következő fájlt külön feladatban nyitja meg. Az elfogadott narrátor kizárólag Piper Imre; a hat felolvasási beállítás és a visszaállítható alapértékek megmaradnak.
-
-A helyi M5-működés, a teljes könyvek támogatása, az alkalmazáson belüli egyszeri modellbeszerzés és az önálló DMG követelmény. A DMG-hez egységes arculat, színpaletta és saját logó/appikon is készül. A végső próba a telepített appban és annak saját lejátszójával történik.
-
-A Markdown/MD-beolvasás, a generálási feladat szüneteltetése és tartós folytatása, valamint a böngészős átvétel kikerült a tervből. A gyors generálás miatt nincs szükség részmentésre; ez nem érinti a kész MP3 lejátszásának szüneteltetését.
+Az alkalmazás nem kezel Markdown-fájlokat, kötegelt feldolgozást vagy generálás közbeni szüneteltetést és tartós folytatást. A kész hang lejátszása szüneteltethető.

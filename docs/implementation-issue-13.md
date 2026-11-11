@@ -1,5 +1,7 @@
 # #13 — Kizárólag Piper Imre
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 2026-11-10. [Aktuális feladat](https://github.com/szarkab/audio-book/issues/13). A felhasználó a három új helyi mintából a Piper Imrét fogadta el; Supertonic M2/M5 és a hosszú VibeVoice-eredmény elutasított.
 
 ## Megvalósítás

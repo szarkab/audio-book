@@ -1,5 +1,7 @@
 # #2 — Rövid TXT → férfihangos MP3: megvalósítási ellenőrzés
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Kapcsolódó feladat: https://github.com/szarkab/audio-book/issues/2
 
 ## Elkészült munkamenet

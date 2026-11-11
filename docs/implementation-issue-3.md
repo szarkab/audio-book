@@ -1,5 +1,7 @@
 # #3 — Hosszú TXT és a felolvasási regresszió javítása
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Dátum: 2026-11-10. Feladat: https://github.com/szarkab/audio-book/issues/3
 
 Állapot: a hosszú feldolgozás és az alkalmazáson belüli lejátszó megvalósult, a tartalmi regresszió visszaellenőrzött. A hosszú hang természetességét és beszélőazonosságát a felhasználó még nem fogadta el; a #3 nyitva marad. Az első hosszú mintát kifejezetten elutasította.

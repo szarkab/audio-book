@@ -1,5 +1,7 @@
 # Eltávolított régi források és tesztmaradványok
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Ezek az elutasított OmniVoice/VibeVoice-kísérletekhez tartoznak. A jelenlegi Piper-alkalmazás egyiküket sem használja. A nagy modellsúlyok már törölve vannak. A felhasználó 2026-11-10-én az alábbi pontos lista törlését kifejezetten jóváhagyta. Mind a tíz fájl eltávolítva.
 
 1. `audiobook/vibevoice.py` — elvetett modelladapter.

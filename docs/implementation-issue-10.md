@@ -1,5 +1,7 @@
 # #10 — Rövid magyar VibeVoice az M5-ön
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Dátum: 2026-11-10. [Feladat](https://github.com/szarkab/audio-book/issues/10), [kiegészítő specifikáció](https://github.com/szarkab/audio-book/issues/9).
 
 Állapot: a teljes rövid TXT → MP3 folyamat a célgépen, a külön natív alkalmazásból is működik. A helyi hang természetességének felhasználói elfogadása még nyitott, ezért #10 nincs lezárva. Hosszú VibeVoice-futás (#11), sorszámkiejtés (#12), tartós folytatás és DMG nem része ennek a készültségi állításnak.

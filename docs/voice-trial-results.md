@@ -1,5 +1,7 @@
 # Első helyi magyar hangpróba — mérési eredmények
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Dátum: 2026-11-10. Kapcsolódó specifikáció: https://github.com/szarkab/audio-book/issues/1
 
 Állapot: a helyi generálás és MP3-dekódolás ellenőrzött. A felhasználó meghallgatta mindkét hangot: a férfihangot szinte tökéletesnek ítélte, és kizárólag azt választotta a folytatáshoz; a női hang nem kerül az első alkalmazásváltozatba. Az OmniVoice-bfloat16 férfiprofil a fejlesztési alap. A hosszú szövegek hangállandósága, teljes szöveghűsége és a végleges MP3-bitrátája még ellenőrizendő.

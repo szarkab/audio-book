@@ -1,14 +1,23 @@
 # Hangoskönyv — Piper Imre
 
-Magyar UTF-8 TXT-fájlok helyi felolvasása az elfogadott **Piper Imre** férfihanggal. Egy fájlból egyetlen mono, 96 kbit/s MP3 készül, alapértelmezésben a korábban elfogadott tempóval. A kész Piper motor CPU-n fut; a generálás nem igényel internetet, felhőt, hangklónozást vagy GPU-t.
+Magyar UTF-8 TXT-fájlok helyi felolvasása **Piper Imre** magyar férfihanggal. Egy fájlból egyetlen mono, 96 kbit/s MP3 készül. A kész Piper motor CPU-n fut; a generálás nem igényel internetet, felhőt, hangklónozást vagy GPU-t.
 
 ## Telepítés és indítás
 
-Az önálló személyes előzetes a [GitHub-kiadásból](https://github.com/szarkab/audio-book/releases/tag/v0.3.0-preview) tölthető le, a privát projekthez szükséges hozzáféréssel. Helyi DMG: `artifacts/HangosKonyv-0.3.0-arm64.dmg`. Az ellenőrzött példány a felhasználó `~/Applications/HangosKonyv.app` helyére telepítve. Apple Silicon Mac és macOS 26 vagy újabb szükséges. A DMG-ben lévő HangosKonyv app az Applications mappába másolható; saját Python, Homebrew vagy projektmappa nem szükséges a futtatásához. Első használatkor az **Imre-hang letöltése** gomb beszerzi az ellenőrzött 63,2 MB-os modellt, legalább 128 MB szabad hely mellett. A kész modell után a TXT → MP3 generálás offline működik.
+Apple Silicon Mac és **macOS 26 vagy újabb** szükséges.
 
-A csomag saját könyv–hanghullám ikont és kék–arany arculatot kapott. A kész hang kizárólag a Lejátszás gombra indul; szüneteltethető, leállítható és tekerhető. Meglévő MP3-at nem ír felül.
+1. Töltsd le a DMG-t a [GitHub-kiadásból](https://github.com/szarkab/audio-book/releases/tag/v0.3.0-preview).
+2. Másold a **HangosKonyv** alkalmazást az Applications mappába, majd indítsd el.
+3. Az **Imre-hang letöltése** gombbal töltsd le a 63,2 MB-os modellt. Ehhez internetkapcsolat és legalább 128 MB szabad hely szükséges.
+4. Válassz egy magyar UTF-8 TXT-fájlt, ellenőrizd az előnézetet, majd indítsd el az MP3 készítését.
 
-A csomag ad-hoc aláírású, Apple Developer ID és notarizáció nélkül. Internetről letöltve a macOS Gatekeeper blokkolhatja; ez nem notarizált nyilvános kiadás. A projekt jelenleg privát, nyilvános alkalmazáskiadás nem cél. A felhasználó személyes használatra elfogadta a macOS figyelmeztetését; az Apple-notarizáció nem hátralévő implementációs feladat. A külső komponensek licencszövegei az appban, a rögzített copyleft forráscsomagok és az alkalmazás forráspillanatképe a DMG Sources mappájában vannak. A saját, megbízható példány első indítása után az engedélyezés az **Adatvédelem és biztonság → Megnyitás mindenképpen** lehetőséggel történhet; [Apple útmutató](https://support.apple.com/en-us/102445).
+Az alkalmazás tartalmazza a futtatókörnyezetet: külön Python, Homebrew vagy projektmappa nem szükséges. A modell letöltése után a felolvasás teljesen offline működik.
+
+Az előzetes ad-hoc aláírású, Apple-notarizáció nélkül, ezért a macOS az első indítást blokkolhatja. Megbízható példány esetén az első megnyitási kísérlet után a **Rendszerbeállítások → Adatvédelem és biztonság → Megnyitás mindenképpen** lehetőség használható. [Apple útmutató](https://support.apple.com/en-us/102445).
+
+## Használat és beállítások
+
+Egy TXT-fájlból egyetlen MP3 készül, köztes jóváhagyás nélkül. A kész hang a **Lejátszás** gombra indul; szüneteltethető, leállítható és tekerhető. A következő szöveg külön feladatban dolgozható fel. Az alkalmazás meglévő MP3-at nem ír felül.
 
 A **Felolvasás beállításai…** gombbal MP3-készítés előtt állítható a tempó, a ritmus és hang változatossága, a kimeneti hangerő, a hangerő-normalizálás és az extra mondatszünet. A kimeneti hangerő a mentett fájlt módosítja, a lejátszó hangerejétől függetlenül. A csúcskorlát megakadályozza a túlvezérlést. Az **Elfogadott alapértékek visszaállítása** minden értéket visszaállít: 1× tempó, 0,333 ritmus, 0,5 hangváltozatosság, 1× hangerő, bekapcsolt normalizálás, 0 s extra szünet. A választás az app bezárásáig marad meg, és a futó generálás alatt nem módosítható. Külön hangsúlyozás-szabályzó nincs.
 
@@ -16,7 +25,7 @@ A biztos sorszámos alakok 1–100 között betűs alakban jelennek meg az előn
 
 A teljes fájl köztes jóváhagyás nélkül feldolgozódik. A rövid belső egységek veszteségmentes PCM-ben állnak össze a lemezen, majd egyszer készül az MP3. A forrásfájl változatlan marad.
 
-A modell és a munkanaplók a felhasználó Library mappájában vannak, a forrásprojekttől függetlenül. A sorszámkiejtés rövid mintáját a felhasználó elfogadta. A Markdown-beolvasás, generálási szüneteltetés/tartós folytatás és a böngészős átvétel nincs a hatókörben. A személyes használatú változat [záró átvétele megtörtént](docs/final-acceptance.md), a felhasználó saját hosszú tesztjével és 33 sikeres automatizált próbával.
+A modell és a munkanaplók a macOS Library mappájában találhatók, a forrásprojekttől függetlenül. Az alkalmazás kizárólag TXT-bemenetet kezel. A generálás szüneteltetése és újraindítás utáni folytatása nem támogatott.
 
 ## Fejlesztői előkészítés
 
@@ -50,12 +59,13 @@ AUDIOBOOK_REAL_PIPER_TEST=1 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m mypy audiobook --check-untyped-defs --ignore-missing-imports
 ```
 
-A tesztek a teljes generálási feladat nyilvános határát használják. A valódi Piper-próba a létrejövő hang hallhatóságát, dekódolását és időtartamát ellenőrzi; a kiejtés és természetesség meghallgatással fogadható el. A célgépes hosszú próba 5395 karakterből 9,64 másodperc alatt körülbelül 6 perces MP3-at készített; a felhasználó a Piper hangminőségét egyelőre elfogadta. [Megvalósítás és mérések](docs/implementation-issue-13.md).
+A tesztek a teljes TXT → MP3 folyamatot, a beállításokat és a hibakezelést vizsgálják. A valódi Piper-próba a hang hallhatóságát, dekódolhatóságát és időtartamát ellenőrzi; a kiejtés és a természetesség megítéléséhez meghallgatás szükséges. A telepített csomag teszteléséhez az `AUDIOBOOK_PACKAGED_APP` változóval adható meg az alkalmazás elérési útja.
 
-A lecserélt nagy modellek és külön próbakörnyezetek kikerültek az aktív munkamappából; csak az Imre modell maradt. A kisebb tesztmaradványok visszaállíthatóan a Kukába kerültek. A további takarításnál a könyvforrások, a felhasználó által mentett hangok és más projektek megmaradnak.
+Részletes eredmények: [ellenőrzési összefoglaló](docs/final-acceptance.md).
 
-## Projekt és források
+## Dokumentáció és források
 
+- [Funkcionális specifikáció](docs/specification.md)
 - [Felolvasási beállítások](https://github.com/szarkab/audio-book/issues/14)
 - [Piper Imre-feladat](https://github.com/szarkab/audio-book/issues/13)
 - [Eredeti termékspecifikáció](https://github.com/szarkab/audio-book/issues/1)
@@ -65,3 +75,5 @@ A lecserélt nagy modellek és külön próbakörnyezetek kikerültek az aktív 
 A korábbi modellkísérletek dokumentumai történeti feljegyzések; az aktuális alkalmazás kizárólag Piper Imrét használ.
 
 A GitHub és az érzékenyadat-ellenőrzés összefoglalója: [ellenőrzési jegyzőkönyv](docs/security-check.md).
+
+A külső komponensek licencszövegei az alkalmazásban, a kapcsolódó forráscsomagok és az alkalmazás forráspillanatképe a DMG `Sources` mappájában találhatók. A projekt saját forráskódjához nincs külön licenc megadva.

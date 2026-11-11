@@ -1,5 +1,7 @@
 # Alkalmazáson belüli Piper Imre-beszerzés — #6
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Lezárás: 2026-11-11. A megvalósítás a #13-ban elfogadott, változatlan Imre-modellt használja; a #11 külön hosszú szöveghűségi átvételét nem zárja le.
 
 ## Működés

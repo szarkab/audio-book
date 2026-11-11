@@ -1,5 +1,7 @@
 # Önálló DMG és arculat — #7
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 2026-11-11. Személyes előzetes: Hangoskönyv 0.3.0, ARM64, macOS 26 vagy újabb. A projekt továbbra is privát. A hangmodell és az elfogadott alapértékek változatlanok.
 
 ## Csomag

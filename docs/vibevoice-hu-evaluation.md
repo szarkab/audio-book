@@ -1,5 +1,7 @@
 # Cseti VibeVoice magyar modell — előzetes Mac-értékelés
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Dátum: 2026-11-10. Ez forráskód- és metaadatvizsgálat, nem helyi hangminőségi vagy teljesítményteszt. A működő alkalmazás modellje nem változott; nagy modellsúlyt nem töltöttünk le.
 
 ## Döntési javaslat

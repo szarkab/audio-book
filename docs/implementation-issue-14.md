@@ -1,5 +1,7 @@
 # Felolvasási beállítások — #14
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Forrás: https://github.com/szarkab/audio-book/issues/14
 
 A natív „Felolvasás beállításai…” ablak hat vezérlőt és egy alapérték-visszaállító gombot ad. Az értékek csak a munkamenetben élnek, a futó feladat saját pillanatképet kap. A Piper tempója a felületi tempó inverze; utólagos gyorsítás helyett a modell időzítését állítja. A kimeneti hangerő a normalizálás után érvényesül, csúcskorláttal. Az extra csend a Piper mondatchunkjai és a szolgáltatás részei közé kerül, hozzáadott záró szünet nélkül. Az elfogadott alapértékek változatlanok.

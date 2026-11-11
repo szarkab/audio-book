@@ -1,5 +1,7 @@
 # Meglévő helyi magyar felolvasó megoldások
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 Vizsgálat: 2026-11-10. Cél: saját használatú, magyar férfi narrátorhangú hanganyag, M5/32 GB Macen, felhő nélkül. A saját VibeVoice-változat hosszú próbáját a felhasználó elutasította: szaggatás, hangváltás, torz hangok és túl hosszú generálás. A korábbi rövid siker és ASR-eredmény nem igazolta a hosszú hang természetességét.
 
 A dokumentum első része elsődleges források vizsgálata; az alábbi záró rész külön, tényleges célgépes rövid próbát rögzít. A meglévő alkalmazás kódja nem módosult. A hangminőség felhasználói elfogadása továbbra is meghallgatást igényel.

@@ -1,5 +1,7 @@
 # Magyar sorszámkiejtés — #12
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 A Piper Imre elé konzervatív szöveg-előkészítés került. Ugyanaz a betűs szöveg jelenik meg az előnézetben és jut a modellhez; az eredeti fájl változatlan. A nyers forrásbájtok ellenőrzőösszege felismeri a változást akkor is, ha a felolvasandó alak ugyanaz maradna.
 
 ## Hatókör

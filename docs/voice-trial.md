@@ -1,5 +1,7 @@
 # Helyi magyar hangpróba
 
+> Történeti feljegyzés: korábbi modellpróbák, mérések vagy fejlesztési ellenőrzések dokumentuma. Az aktuális alkalmazás működését a [specifikáció](specification.md) írja le.
+
 A specifikáció: https://github.com/szarkab/audio-book/issues/1
 
 Ez elkülönített minőségi és teljesítménypróba, nem az alkalmazás kész backendje. A modell, a futtatókörnyezet és a helyben generált hanganyag nem kerül Gitbe.
